@@ -11,6 +11,7 @@ import TenantProfile from './TenantProfile';
 import MaintenanceRequests from './MaintenanceRequests';
 import RentPayments from './RentPayments';
 import Announcements from './Announcements';
+import PayRent from './PayRent';
 
 interface TenantDashboardProps {
   user: any;
@@ -179,6 +180,11 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
             </CardContent>
           </Card>
         )}
+
+        {/* Pay Rent Card */}
+        <div className="mb-8">
+          <PayRent assignment={stats.assignment} />
+        </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

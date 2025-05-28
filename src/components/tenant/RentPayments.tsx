@@ -72,9 +72,23 @@ const RentPayments = ({ user, assignment }: RentPaymentsProps) => {
     }
   };
 
-  const generateMonthsForYear = (year: string) => {
+  const generateMonthsFromAssignment = (year: string) => {
+    if (!assignment?.assigned_at) return [];
+    
+    const assignedDate = new Date(assignment.assigned_at);
+    const assignedYear = assignedDate.getFullYear();
+    const assignedMonth = assignedDate.getMonth() + 1;
+    
     const months = [];
-    for (let i = 1; i <= 12; i++) {
+    const targetYear = parseInt(year);
+    
+    // If selected year is before assignment year, return empty
+    if (targetYear < assignedYear) return [];
+    
+    // Start from assignment month if it's the assignment year, otherwise from January
+    const startMonth = targetYear === assignedYear ? assignedMonth : 1;
+    
+    for (let i = startMonth; i <= 12; i++) {
       const monthYear = `${year}-${i.toString().padStart(2, '0')}`;
       months.push({
         monthYear,
@@ -85,9 +99,7 @@ const RentPayments = ({ user, assignment }: RentPaymentsProps) => {
     return months;
   };
 
-  const monthsData = generateMonthsForYear(selectedYear);
-  const totalPaid = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0);
-  const expectedTotal = assignment ? assignment.house.price * 12 : 0;
+  const monthsData = generateMonthsFromAssignment(selectedYear);
 
   if (!assignment) {
     return (
@@ -115,38 +127,6 @@ const RentPayments = ({ user, assignment }: RentPaymentsProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Summary Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-green-600" />
-            Rent Payment Summary ({selectedYear})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label>Monthly Rent</Label>
-              <p className="text-lg font-semibold text-green-600">
-                KSh {assignment.house.price.toLocaleString()}
-              </p>
-            </div>
-            <div>
-              <Label>Total Paid ({selectedYear})</Label>
-              <p className="text-lg font-semibold">
-                KSh {totalPaid.toLocaleString()}
-              </p>
-            </div>
-            <div>
-              <Label>Expected Annual</Label>
-              <p className="text-lg font-semibold text-gray-600">
-                KSh {expectedTotal.toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Year Selector and Payments */}
       <Card>
         <CardHeader>
@@ -154,7 +134,7 @@ const RentPayments = ({ user, assignment }: RentPaymentsProps) => {
             <div>
               <CardTitle>Payment History</CardTitle>
               <CardDescription>
-                View your rent payment history by year
+                Your rent payment history from assignment date
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -225,6 +205,14 @@ const RentPayments = ({ user, assignment }: RentPaymentsProps) => {
               </Card>
             ))}
           </div>
+          
+          {monthsData.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Payment History</h3>
+              <p>No payment months available for the selected year.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

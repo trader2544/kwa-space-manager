@@ -2,12 +2,14 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Home, Phone, Mail } from 'lucide-react';
+import { Users, Plus, Home, Mail, Phone } from 'lucide-react';
 
 interface Tenant {
   id: string;
@@ -37,61 +39,53 @@ interface House {
   is_vacant: boolean;
 }
 
-interface TenantsManagementProps {
-  onStatsUpdate: () => void;
-}
-
-const TenantsManagement = ({ onStatsUpdate }: TenantsManagementProps) => {
+const TenantsManagement = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [houses, setHouses] = useState<House[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [assigningTenant, setAssigningTenant] = useState<string | null>(null);
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<string>('');
+  const [selectedHouse, setSelectedHouse] = useState<string>('');
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchData();
+    fetchTenants();
+    fetchVacantHouses();
   }, []);
 
-  const fetchData = async () => {
+  const fetchTenants = async () => {
     try {
-      // Fetch tenants with their assignments
-      const { data: tenantsData, error: tenantsError } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select(`
           *,
-          tenant_assignments!tenant_assignments_tenant_id_fkey(
+          tenant_assignments!inner(
             house_id,
             assigned_at,
             is_active,
             houses(room_name, floor, section, price)
           )
         `)
-        .eq('role', 'tenant');
+        .eq('role', 'tenant')
+        .eq('tenant_assignments.is_active', true);
 
-      if (tenantsError) throw tenantsError;
+      if (error) throw error;
 
-      // Transform the data to include only active assignments
-      const transformedTenants = tenantsData?.map(tenant => ({
+      // Transform the data to match our interface
+      const transformedTenants = (data || []).map(tenant => ({
         ...tenant,
-        assignment: tenant.tenant_assignments?.find(assignment => assignment.is_active) || null
-      })) || [];
-
-      // Fetch vacant houses
-      const { data: housesData, error: housesError } = await supabase
-        .from('houses')
-        .select('*')
-        .eq('is_vacant', true)
-        .order('floor', { ascending: true });
-
-      if (housesError) throw housesError;
+        assignment: tenant.tenant_assignments?.[0] ? {
+          house_id: tenant.tenant_assignments[0].house_id,
+          assigned_at: tenant.tenant_assignments[0].assigned_at,
+          house: tenant.tenant_assignments[0].houses
+        } : undefined
+      }));
 
       setTenants(transformedTenants);
-      setHouses(housesData || []);
     } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to fetch data.",
+        description: "Failed to fetch tenants.",
         variant: "destructive",
       });
     } finally {
@@ -99,28 +93,39 @@ const TenantsManagement = ({ onStatsUpdate }: TenantsManagementProps) => {
     }
   };
 
-  const assignHouse = async (tenantId: string, houseId: string) => {
+  const fetchVacantHouses = async () => {
     try {
-      setAssigningTenant(tenantId);
+      const { data, error } = await supabase
+        .from('houses')
+        .select('*')
+        .eq('is_vacant', true)
+        .order('floor')
+        .order('section')
+        .order('room_name');
 
-      // Get current user (admin)
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      // First, deactivate any existing assignments for this tenant
-      await supabase
-        .from('tenant_assignments')
-        .update({ is_active: false })
-        .eq('tenant_id', tenantId)
-        .eq('is_active', true);
+      if (error) throw error;
+      setHouses(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch houses.",
+        variant: "destructive",
+      });
+    }
+  };
 
-      // Create new assignment
+  const assignHouse = async () => {
+    if (!selectedTenant || !selectedHouse) return;
+
+    try {
+      setIsAssigning(true);
+
+      // Create tenant assignment
       const { error: assignError } = await supabase
         .from('tenant_assignments')
         .insert({
-          tenant_id: tenantId,
-          house_id: houseId,
-          assigned_by: user?.id,
-          is_active: true
+          tenant_id: selectedTenant,
+          house_id: selectedHouse,
         });
 
       if (assignError) throw assignError;
@@ -129,17 +134,20 @@ const TenantsManagement = ({ onStatsUpdate }: TenantsManagementProps) => {
       const { error: houseError } = await supabase
         .from('houses')
         .update({ is_vacant: false })
-        .eq('id', houseId);
+        .eq('id', selectedHouse);
 
       if (houseError) throw houseError;
 
-      await fetchData();
-      onStatsUpdate();
-      
       toast({
         title: "Success",
         description: "House assigned successfully!",
       });
+
+      // Refresh data
+      fetchTenants();
+      fetchVacantHouses();
+      setSelectedTenant('');
+      setSelectedHouse('');
     } catch (error: any) {
       toast({
         title: "Error",
@@ -147,22 +155,18 @@ const TenantsManagement = ({ onStatsUpdate }: TenantsManagementProps) => {
         variant: "destructive",
       });
     } finally {
-      setAssigningTenant(null);
+      setIsAssigning(false);
     }
   };
 
-  const unassignHouse = async (tenantId: string) => {
+  const unassignHouse = async (tenantId: string, houseId: string) => {
     try {
-      // Get the current assignment
-      const currentAssignment = tenants.find(t => t.id === tenantId)?.assignment;
-      if (!currentAssignment) return;
-
-      // Deactivate the assignment
+      // Deactivate assignment
       const { error: assignError } = await supabase
         .from('tenant_assignments')
         .update({ is_active: false })
         .eq('tenant_id', tenantId)
-        .eq('house_id', currentAssignment.house_id)
+        .eq('house_id', houseId)
         .eq('is_active', true);
 
       if (assignError) throw assignError;
@@ -171,17 +175,17 @@ const TenantsManagement = ({ onStatsUpdate }: TenantsManagementProps) => {
       const { error: houseError } = await supabase
         .from('houses')
         .update({ is_vacant: true })
-        .eq('id', currentAssignment.house_id);
+        .eq('id', houseId);
 
       if (houseError) throw houseError;
 
-      await fetchData();
-      onStatsUpdate();
-      
       toast({
         title: "Success",
         description: "House unassigned successfully!",
       });
+
+      fetchTenants();
+      fetchVacantHouses();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -190,12 +194,6 @@ const TenantsManagement = ({ onStatsUpdate }: TenantsManagementProps) => {
       });
     }
   };
-
-  const filteredTenants = tenants.filter(tenant =>
-    tenant.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tenant.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tenant.phone?.includes(searchTerm)
-  );
 
   if (loading) {
     return (
@@ -209,100 +207,149 @@ const TenantsManagement = ({ onStatsUpdate }: TenantsManagementProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <Card>
         <CardHeader>
-          <CardTitle>Tenants Management</CardTitle>
-          <CardDescription>
-            Manage tenant assignments and view tenant information
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-6">
-            <Input
-              placeholder="Search tenants by name, email, or phone..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-md"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTenants.map((tenant) => (
-              <Card key={tenant.id} className="border-l-4 border-l-green-500">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{tenant.full_name || 'No Name'}</CardTitle>
-                    <Badge variant={tenant.assignment ? "default" : "secondary"}>
-                      {tenant.assignment ? "Assigned" : "Unassigned"}
-                    </Badge>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Tenants Management
+              </CardTitle>
+              <CardDescription>
+                Manage tenant assignments and house allocations
+              </CardDescription>
+            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Assign House
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Assign House to Tenant</DialogTitle>
+                  <DialogDescription>
+                    Select a tenant and a vacant house to create an assignment.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Select Tenant</Label>
+                    <Select value={selectedTenant} onValueChange={setSelectedTenant}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a tenant" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {tenants.filter(t => !t.assignment).map((tenant) => (
+                          <SelectItem key={tenant.id} value={tenant.id}>
+                            {tenant.full_name} ({tenant.email})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm">
-                      <Mail className="h-4 w-4 mr-2 text-gray-500" />
-                      <span className="truncate">{tenant.email}</span>
+                  
+                  <div>
+                    <Label>Select House</Label>
+                    <Select value={selectedHouse} onValueChange={setSelectedHouse}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a house" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {houses.map((house) => (
+                          <SelectItem key={house.id} value={house.id}>
+                            {house.room_name} - {house.floor} Floor, {house.section} (KSh {house.price.toLocaleString()})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <Button 
+                    onClick={assignHouse} 
+                    disabled={!selectedTenant || !selectedHouse || isAssigning}
+                    className="w-full"
+                  >
+                    {isAssigning ? 'Assigning...' : 'Assign House'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Tenants List */}
+      <div className="grid gap-4">
+        {tenants.map((tenant) => (
+          <Card key={tenant.id}>
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <CardTitle className="text-lg">{tenant.full_name}</CardTitle>
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <Mail className="h-3 w-3" />
+                      {tenant.email}
                     </div>
                     {tenant.phone && (
-                      <div className="flex items-center text-sm">
-                        <Phone className="h-4 w-4 mr-2 text-gray-500" />
-                        <span>{tenant.phone}</span>
+                      <div className="flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        {tenant.phone}
                       </div>
                     )}
                   </div>
-
-                  {tenant.assignment ? (
-                    <div className="space-y-3">
-                      <div className="p-3 bg-green-50 rounded-lg border">
-                        <div className="flex items-center mb-2">
-                          <Home className="h-4 w-4 mr-2 text-green-600" />
-                          <span className="font-medium">{tenant.assignment.house.room_name}</span>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          <p>{tenant.assignment.house.floor} Floor - {tenant.assignment.house.section}</p>
-                          <p className="font-medium">Rent: KSh {tenant.assignment.house.price.toLocaleString()}</p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => unassignHouse(tenant.id)}
-                      >
-                        Unassign House
-                      </Button>
+                </div>
+                <Badge variant="outline">Tenant</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {tenant.assignment ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Home className="h-4 w-4 text-green-600" />
+                    <div>
+                      <p className="font-medium">{tenant.assignment.house.room_name}</p>
+                      <p className="text-sm text-gray-600">
+                        {tenant.assignment.house.floor} Floor - {tenant.assignment.house.section}
+                      </p>
+                      <p className="text-sm text-green-600 font-medium">
+                        KSh {tenant.assignment.house.price.toLocaleString()}/month
+                      </p>
                     </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <Select onValueChange={(houseId) => assignHouse(tenant.id, houseId)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Assign a house" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {houses.map((house) => (
-                            <SelectItem key={house.id} value={house.id}>
-                              {house.room_name} - {house.floor} ({house.section}) - KSh {house.price.toLocaleString()}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {assigningTenant === tenant.id && (
-                        <div className="text-sm text-gray-500">Assigning house...</div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {filteredTenants.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              No tenants found.
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => unassignHouse(tenant.id, tenant.assignment!.house_id)}
+                  >
+                    Unassign
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center py-4 text-gray-500">
+                  <Home className="h-8 w-8 text-gray-300 mr-2" />
+                  <span>No house assigned</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+        
+        {tenants.length === 0 && (
+          <Card>
+            <CardContent className="p-8">
+              <div className="text-center text-gray-500">
+                <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Tenants</h3>
+                <p>No tenants have been registered yet.</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
