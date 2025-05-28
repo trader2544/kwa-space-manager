@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -168,11 +167,11 @@ const AdminDashboard = ({ user, onSignOut }: AdminDashboardProps) => {
           </TabsContent>
 
           <TabsContent value="tenants">
-            <TenantsManagement onStatsUpdate={fetchStats} />
+            <TenantsManagement />
           </TabsContent>
 
           <TabsContent value="maintenance">
-            <MaintenanceManagement onStatsUpdate={fetchStats} />
+            <MaintenanceManagement />
           </TabsContent>
 
           <TabsContent value="rent">

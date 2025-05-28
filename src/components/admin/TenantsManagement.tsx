@@ -55,34 +55,59 @@ const TenantsManagement = () => {
 
   const fetchTenants = async () => {
     try {
-      const { data, error } = await supabase
+      console.log('Fetching tenants...');
+      
+      // First get all tenants
+      const { data: allTenants, error: tenantsError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          tenant_assignments!inner(
-            house_id,
-            assigned_at,
-            is_active,
-            houses(room_name, floor, section, price)
-          )
-        `)
-        .eq('role', 'tenant')
-        .eq('tenant_assignments.is_active', true);
+        .select('*')
+        .eq('role', 'tenant');
 
-      if (error) throw error;
+      if (tenantsError) {
+        console.error('Error fetching tenants:', tenantsError);
+        throw tenantsError;
+      }
 
-      // Transform the data to match our interface
-      const transformedTenants = (data || []).map(tenant => ({
-        ...tenant,
-        assignment: tenant.tenant_assignments?.[0] ? {
-          house_id: tenant.tenant_assignments[0].house_id,
-          assigned_at: tenant.tenant_assignments[0].assigned_at,
-          house: tenant.tenant_assignments[0].houses
-        } : undefined
-      }));
+      console.log('All tenants:', allTenants);
 
-      setTenants(transformedTenants);
+      // Then get their assignments separately
+      const tenantsWithAssignments = await Promise.all(
+        (allTenants || []).map(async (tenant) => {
+          const { data: assignment, error: assignmentError } = await supabase
+            .from('tenant_assignments')
+            .select(`
+              house_id,
+              assigned_at,
+              houses!inner(
+                room_name,
+                floor,
+                section,
+                price
+              )
+            `)
+            .eq('tenant_id', tenant.id)
+            .eq('is_active', true)
+            .maybeSingle();
+
+          if (assignmentError) {
+            console.error('Error fetching assignment for tenant:', tenant.id, assignmentError);
+          }
+
+          return {
+            ...tenant,
+            assignment: assignment ? {
+              house_id: assignment.house_id,
+              assigned_at: assignment.assigned_at,
+              house: assignment.houses
+            } : undefined
+          };
+        })
+      );
+
+      console.log('Tenants with assignments:', tenantsWithAssignments);
+      setTenants(tenantsWithAssignments);
     } catch (error: any) {
+      console.error('Error in fetchTenants:', error);
       toast({
         title: "Error",
         description: "Failed to fetch tenants.",
@@ -95,6 +120,7 @@ const TenantsManagement = () => {
 
   const fetchVacantHouses = async () => {
     try {
+      console.log('Fetching vacant houses...');
       const { data, error } = await supabase
         .from('houses')
         .select('*')
@@ -103,9 +129,15 @@ const TenantsManagement = () => {
         .order('section')
         .order('room_name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching houses:', error);
+        throw error;
+      }
+
+      console.log('Vacant houses:', data);
       setHouses(data || []);
     } catch (error: any) {
+      console.error('Error in fetchVacantHouses:', error);
       toast({
         title: "Error",
         description: "Failed to fetch houses.",
@@ -119,6 +151,7 @@ const TenantsManagement = () => {
 
     try {
       setIsAssigning(true);
+      console.log('Assigning house:', selectedHouse, 'to tenant:', selectedTenant);
 
       // Create tenant assignment
       const { error: assignError } = await supabase
@@ -128,7 +161,10 @@ const TenantsManagement = () => {
           house_id: selectedHouse,
         });
 
-      if (assignError) throw assignError;
+      if (assignError) {
+        console.error('Error creating assignment:', assignError);
+        throw assignError;
+      }
 
       // Update house vacancy status
       const { error: houseError } = await supabase
@@ -136,7 +172,10 @@ const TenantsManagement = () => {
         .update({ is_vacant: false })
         .eq('id', selectedHouse);
 
-      if (houseError) throw houseError;
+      if (houseError) {
+        console.error('Error updating house status:', houseError);
+        throw houseError;
+      }
 
       toast({
         title: "Success",
@@ -144,11 +183,12 @@ const TenantsManagement = () => {
       });
 
       // Refresh data
-      fetchTenants();
-      fetchVacantHouses();
+      await fetchTenants();
+      await fetchVacantHouses();
       setSelectedTenant('');
       setSelectedHouse('');
     } catch (error: any) {
+      console.error('Error in assignHouse:', error);
       toast({
         title: "Error",
         description: "Failed to assign house.",
@@ -161,6 +201,8 @@ const TenantsManagement = () => {
 
   const unassignHouse = async (tenantId: string, houseId: string) => {
     try {
+      console.log('Unassigning house:', houseId, 'from tenant:', tenantId);
+
       // Deactivate assignment
       const { error: assignError } = await supabase
         .from('tenant_assignments')
@@ -169,7 +211,10 @@ const TenantsManagement = () => {
         .eq('house_id', houseId)
         .eq('is_active', true);
 
-      if (assignError) throw assignError;
+      if (assignError) {
+        console.error('Error deactivating assignment:', assignError);
+        throw assignError;
+      }
 
       // Update house vacancy status
       const { error: houseError } = await supabase
@@ -177,16 +222,20 @@ const TenantsManagement = () => {
         .update({ is_vacant: true })
         .eq('id', houseId);
 
-      if (houseError) throw houseError;
+      if (houseError) {
+        console.error('Error updating house status:', houseError);
+        throw houseError;
+      }
 
       toast({
         title: "Success",
         description: "House unassigned successfully!",
       });
 
-      fetchTenants();
-      fetchVacantHouses();
+      await fetchTenants();
+      await fetchVacantHouses();
     } catch (error: any) {
+      console.error('Error in unassignHouse:', error);
       toast({
         title: "Error",
         description: "Failed to unassign house.",

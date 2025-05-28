@@ -37,6 +37,8 @@ const RentPayments = ({ user, assignment }: RentPaymentsProps) => {
 
   const fetchPayments = async () => {
     try {
+      console.log('Fetching rent payments for user:', user.id, 'year:', selectedYear);
+      
       const { data, error } = await supabase
         .from('rent_payments')
         .select('*')
@@ -44,9 +46,15 @@ const RentPayments = ({ user, assignment }: RentPaymentsProps) => {
         .like('month_year', `${selectedYear}%`)
         .order('month_year', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching payments:', error);
+        throw error;
+      }
+      
+      console.log('Fetched payments:', data);
       setPayments(data || []);
     } catch (error: any) {
+      console.error('Error in fetchPayments:', error);
       toast({
         title: "Error",
         description: "Failed to fetch rent payments.",
@@ -63,13 +71,56 @@ const RentPayments = ({ user, assignment }: RentPaymentsProps) => {
         return 'default';
       case 'partial':
         return 'secondary';
-      case 'pending':
+      case 'late':
         return 'destructive';
       case 'overdue':
         return 'destructive';
       default:
         return 'secondary';
     }
+  };
+
+  const getPaymentStatus = (monthYear: string, paymentDate?: string) => {
+    const currentDate = new Date();
+    const [year, month] = monthYear.split('-');
+    const monthDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+    
+    // Only show status for current month and past months
+    if (monthDate > currentDate) {
+      return null; // Don't show future months
+    }
+
+    // Check if payment exists
+    if (paymentDate) {
+      const paymentDay = new Date(paymentDate).getDate();
+      if (paymentDay >= 1 && paymentDay <= 5) {
+        return { status: 'paid', color: 'default', penalty: 0 };
+      } else if (paymentDay >= 6 && paymentDay <= 9) {
+        return { status: 'late', color: 'destructive', penalty: 200 };
+      } else {
+        return { status: 'paid', color: 'default', penalty: 0 };
+      }
+    }
+
+    // No payment found - check if it's overdue
+    const isCurrentMonth = monthDate.getMonth() === currentDate.getMonth() && 
+                          monthDate.getFullYear() === currentDate.getFullYear();
+    
+    if (isCurrentMonth) {
+      const currentDay = currentDate.getDate();
+      if (currentDay > 9) {
+        return { status: 'overdue', color: 'destructive', penalty: 200 };
+      } else if (currentDay > 5) {
+        return { status: 'pending (late)', color: 'destructive', penalty: 200 };
+      } else {
+        return { status: 'pending', color: 'secondary', penalty: 0 };
+      }
+    } else if (monthDate < currentDate) {
+      // Past month with no payment
+      return { status: 'overdue', color: 'destructive', penalty: 200 };
+    }
+
+    return { status: 'pending', color: 'secondary', penalty: 0 };
   };
 
   const generateMonthsFromAssignment = (year: string) => {
@@ -81,6 +132,7 @@ const RentPayments = ({ user, assignment }: RentPaymentsProps) => {
     
     const months = [];
     const targetYear = parseInt(year);
+    const currentDate = new Date();
     
     // If selected year is before assignment year, return empty
     if (targetYear < assignedYear) return [];
@@ -88,15 +140,25 @@ const RentPayments = ({ user, assignment }: RentPaymentsProps) => {
     // Start from assignment month if it's the assignment year, otherwise from January
     const startMonth = targetYear === assignedYear ? assignedMonth : 1;
     
-    for (let i = startMonth; i <= 12; i++) {
+    // End at current month if it's current year, otherwise December
+    const endMonth = targetYear === currentDate.getFullYear() ? currentDate.getMonth() + 1 : 12;
+    
+    for (let i = startMonth; i <= endMonth; i++) {
       const monthYear = `${year}-${i.toString().padStart(2, '0')}`;
-      months.push({
-        monthYear,
-        monthName: new Date(parseInt(year), i - 1).toLocaleDateString('en-US', { month: 'long' }),
-        payment: payments.find(p => p.month_year === monthYear),
-      });
+      const payment = payments.find(p => p.month_year === monthYear);
+      const statusInfo = getPaymentStatus(monthYear, payment?.payment_date);
+      
+      // Only add if status info exists (not future months)
+      if (statusInfo) {
+        months.push({
+          monthYear,
+          monthName: new Date(parseInt(year), i - 1).toLocaleDateString('en-US', { month: 'long' }),
+          payment,
+          statusInfo,
+        });
+      }
     }
-    return months;
+    return months.reverse(); // Show most recent first
   };
 
   const monthsData = generateMonthsFromAssignment(selectedYear);
@@ -152,15 +214,15 @@ const RentPayments = ({ user, assignment }: RentPaymentsProps) => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {monthsData.map(({ monthYear, monthName, payment }) => (
+            {monthsData.map(({ monthYear, monthName, payment, statusInfo }) => (
               <Card key={monthYear} className={`border-l-4 ${
                 payment ? 'border-l-green-500' : 'border-l-gray-300'
               }`}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base">{monthName} {selectedYear}</CardTitle>
-                    <Badge variant={payment ? getStatusColor(payment.status) : 'outline'}>
-                      {payment ? payment.status : 'not paid'}
+                    <Badge variant={statusInfo.color}>
+                      {statusInfo.status}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -171,6 +233,13 @@ const RentPayments = ({ user, assignment }: RentPaymentsProps) => {
                       {payment ? `KSh ${payment.amount.toLocaleString()}` : `KSh ${assignment.house.price.toLocaleString()}`}
                     </span>
                   </div>
+                  
+                  {statusInfo.penalty > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-red-600">Penalty:</span>
+                      <span className="text-sm font-medium text-red-600">KSh {statusInfo.penalty}</span>
+                    </div>
+                  )}
                   
                   {payment && (
                     <>
@@ -213,6 +282,29 @@ const RentPayments = ({ user, assignment }: RentPaymentsProps) => {
               <p>No payment months available for the selected year.</p>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Payment Guidelines */}
+      <Card className="border-l-4 border-l-blue-500">
+        <CardHeader>
+          <CardTitle className="text-lg">Payment Guidelines</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2">
+              <Badge variant="default">Good Payment</Badge>
+              <span>Pay between 1st - 5th of the month (No penalty)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="destructive">Late Payment</Badge>
+              <span>Pay between 6th - 9th of the month (KSh 200 penalty)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="destructive">Overdue</Badge>
+              <span>Payment after 9th or missed payment (KSh 200 penalty)</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
