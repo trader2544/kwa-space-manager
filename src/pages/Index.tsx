@@ -1,14 +1,14 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Users, Settings, Bell, Home, Wrench, Trash2, Wifi, Shield, Droplets, BookOpen, Phone, Mail, MapPin, GraduationCap, MessageSquare } from 'lucide-react';
+import { Building2, Users, Settings, Bell, Home, Wrench, Trash2, Wifi, Shield, Droplets, BookOpen, Phone, Mail, MapPin, GraduationCap, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import AuthPage from '@/components/auth/AuthPage';
 import AdminDashboard from '@/components/admin/AdminDashboard';
 import TenantDashboard from '@/components/tenant/TenantDashboard';
 import HouseSearch from '@/components/home/HouseSearch';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const Index = () => {
   const [userType, setUserType] = useState<'admin' | 'tenant' | null>(null);
@@ -17,6 +17,8 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [showAuth, setShowAuth] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [researchOpen, setResearchOpen] = useState(false);
+  const [partnersOpen, setPartnersOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -159,14 +161,14 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
       <div className="container mx-auto px-4 py-4 md:py-8">
         {/* Header */}
-        <div className="text-center mb-8 md:mb-12">
+        <div className="text-center mb-6 md:mb-12">
           <div className="flex items-center justify-center mb-4 md:mb-6">
-            <Building2 className="h-10 w-10 md:h-12 md:w-12 text-green-600 mr-3" />
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
+            <Building2 className="h-8 w-8 md:h-12 md:w-12 text-green-600 mr-2 md:mr-3" />
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-gray-900">
               Kwa Kamande
             </h1>
           </div>
-          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-4">
+          <p className="text-base md:text-xl text-gray-600 max-w-2xl mx-auto mb-4">
             Premium Student Accommodation in Mwingi, Kitui
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm text-gray-500">
@@ -192,30 +194,31 @@ const Index = () => {
         </div>
 
         {/* Hero CTA */}
-        <div className="max-w-4xl mx-auto mb-8 md:mb-16">
+        <div className="max-w-4xl mx-auto mb-6 md:mb-16">
           <Card className="border-2 border-green-200 bg-gradient-to-r from-green-50 to-blue-50">
-            <CardContent className="p-6 md:p-8 text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+            <CardContent className="p-4 md:p-8 text-center">
+              <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-4">
                 Find Your Perfect Room Today
               </h2>
-              <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+              <p className="text-gray-600 mb-6 max-w-2xl mx-auto text-sm md:text-base">
                 Comfortable, secure, and affordable accommodation designed specifically for medical students and trainees
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
                   onClick={() => setShowSearch(true)}
                   size="lg"
-                  className="bg-green-600 hover:bg-green-700 text-lg px-8"
+                  className="bg-green-600 hover:bg-green-700 text-base md:text-lg px-6 md:px-8"
                 >
-                  <Home className="h-5 w-5 mr-2" />
+                  <Home className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                   Browse Available Rooms
                 </Button>
                 <Button 
                   onClick={() => setShowAuth(true)}
                   variant="outline" 
                   size="lg"
-                  className="text-lg px-8"
+                  className="text-base md:text-lg px-6 md:px-8"
                 >
+                  <Users className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                   Student Portal
                 </Button>
               </div>
@@ -223,106 +226,38 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* Research Services Section */}
-        <div className="max-w-6xl mx-auto mb-8 md:mb-16">
-          <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
-            <CardHeader className="text-center">
-              <CardTitle className="text-xl md:text-2xl text-gray-800 mb-4 flex items-center justify-center gap-2">
-                <BookOpen className="h-6 w-6 text-blue-600" />
-                Academic Research Support
-              </CardTitle>
-              <CardDescription className="text-gray-600">
-                Professional research assistance for medical students at affordable rates
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center">
-                <p className="text-gray-700 mb-6 max-w-2xl mx-auto">
-                  Get expert help with research papers, case studies, assignments, and thesis formatting. 
-                  Our academic experts provide high-quality assistance at student-friendly prices.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-blue-900 mb-2">Research Papers</h4>
-                    <p className="text-sm text-gray-600">Complete research writing and editing</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-blue-900 mb-2">Case Studies</h4>
-                    <p className="text-sm text-gray-600">Medical case study analysis and formatting</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-semibold text-blue-900 mb-2">Thesis Support</h4>
-                    <p className="text-sm text-gray-600">Thesis writing and formatting assistance</p>
-                  </div>
-                </div>
-                <Button 
-                  onClick={() => window.open('https://wa.me/254707947594?text=Hello! I need help with academic research.', '_blank')}
-                  className="bg-blue-600 hover:bg-blue-700"
-                  size="lg"
-                >
-                  <MessageSquare className="h-5 w-5 mr-2" />
-                  Consult Research Expert
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Partner Institutions */}
-        <div className="max-w-6xl mx-auto mb-8 md:mb-16">
-          <Card>
-            <CardHeader className="text-center">
-              <CardTitle className="text-xl md:text-2xl text-gray-800 mb-4">
-                Partner Medical Institutions
-              </CardTitle>
-              <CardDescription className="text-gray-600">
-                We proudly accommodate students from leading medical training institutions
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="bg-blue-50 p-4 rounded-lg text-center">
-                  <GraduationCap className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                  <h4 className="font-semibold text-blue-900">Jordan Medical College</h4>
-                  <p className="text-sm text-blue-700">Kitui Campus</p>
-                </div>
-                <div className="bg-green-50 p-4 rounded-lg text-center">
-                  <GraduationCap className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                  <h4 className="font-semibold text-green-900">KMTC Kitui</h4>
-                  <p className="text-sm text-green-700">Kenya Medical Training College</p>
-                </div>
-                <div className="bg-purple-50 p-4 rounded-lg text-center">
-                  <GraduationCap className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                  <h4 className="font-semibold text-purple-900">KMTC Mbooni</h4>
-                  <p className="text-sm text-purple-700">Kenya Medical Training College</p>
-                </div>
-                <div className="bg-orange-50 p-4 rounded-lg text-center">
-                  <GraduationCap className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                  <h4 className="font-semibold text-orange-900">KMTC Thika</h4>
-                  <p className="text-sm text-orange-700">Kenya Medical Training College</p>
-                </div>
-                <div className="bg-red-50 p-4 rounded-lg text-center">
-                  <GraduationCap className="h-8 w-8 text-red-600 mx-auto mb-2" />
-                  <h4 className="font-semibold text-red-900">KMTC Wajir</h4>
-                  <p className="text-sm text-red-700">Kenya Medical Training College</p>
-                </div>
-                <div className="bg-teal-50 p-4 rounded-lg text-center">
-                  <GraduationCap className="h-8 w-8 text-teal-600 mx-auto mb-2" />
-                  <h4 className="font-semibold text-teal-900">KTMC Thika</h4>
-                  <p className="text-sm text-teal-700">Other Medical Institutions</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Features */}
-        <div className="max-w-6xl mx-auto mb-8 md:mb-16">
-          <h3 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12 text-gray-800">
+        {/* Why Students Choose Kwa Kamande */}
+        <div className="max-w-6xl mx-auto mb-6 md:mb-16">
+          <h3 className="text-xl md:text-3xl font-bold text-center mb-6 md:mb-12 text-gray-800">
             Why Students Choose Kwa Kamande
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {/* Mobile Carousel */}
+          <div className="md:hidden">
+            <div className="overflow-x-auto">
+              <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
+                {[
+                  { icon: Shield, title: "24/7 Security", desc: "Round-the-clock security for complete peace of mind and safety", color: "green" },
+                  { icon: Wifi, title: "Free WiFi", desc: "High-speed internet connectivity for all your study and research needs", color: "blue" },
+                  { icon: Droplets, title: "24/7 Water Supply", desc: "Consistent clean water supply ensuring comfort and convenience", color: "cyan" },
+                  { icon: BookOpen, title: "Study-Friendly Environment", desc: "Quiet, conducive atmosphere designed for academic excellence", color: "purple" },
+                  { icon: Home, title: "Furnished Rooms", desc: "Fully furnished accommodations with essential amenities included", color: "orange" },
+                  { icon: Users, title: "Exclusive Community", desc: "Students-only residence fostering academic collaboration", color: "teal" },
+                ].map((feature, index) => (
+                  <div key={index} className="text-center flex-shrink-0 w-64">
+                    <div className={`mx-auto mb-4 p-4 bg-${feature.color}-100 rounded-full w-16 h-16 flex items-center justify-center`}>
+                      <feature.icon className={`h-8 w-8 text-${feature.color}-600`} />
+                    </div>
+                    <h4 className="text-lg font-semibold mb-2 text-gray-800">{feature.title}</h4>
+                    <p className="text-gray-600 text-sm">{feature.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             <div className="text-center">
               <div className="mx-auto mb-4 p-4 bg-green-100 rounded-full w-16 h-16 flex items-center justify-center">
                 <Shield className="h-8 w-8 text-green-600" />
@@ -373,11 +308,195 @@ const Index = () => {
           </div>
         </div>
 
+        {/* Academic Research Support - Collapsible on Mobile */}
+        <div className="max-w-6xl mx-auto mb-6 md:mb-16">
+          <div className="md:hidden">
+            <Collapsible open={researchOpen} onOpenChange={setResearchOpen}>
+              <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="text-center cursor-pointer">
+                    <CardTitle className="text-lg text-gray-800 mb-2 flex items-center justify-center gap-2">
+                      <BookOpen className="h-5 w-5 text-blue-600" />
+                      Academic Research Support
+                      {researchOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </CardTitle>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent>
+                    <div className="text-center">
+                      <p className="text-gray-700 mb-6 max-w-2xl mx-auto">
+                        Get expert help with research papers, case studies, assignments, and thesis formatting. 
+                        Our academic experts provide high-quality assistance at student-friendly prices.
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-white p-4 rounded-lg shadow-sm">
+                          <h4 className="font-semibold text-blue-900 mb-2">Research Papers</h4>
+                          <p className="text-sm text-gray-600">Complete research writing and editing</p>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow-sm">
+                          <h4 className="font-semibold text-blue-900 mb-2">Case Studies</h4>
+                          <p className="text-sm text-gray-600">Medical case study analysis and formatting</p>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow-sm">
+                          <h4 className="font-semibold text-blue-900 mb-2">Thesis Support</h4>
+                          <p className="text-sm text-gray-600">Thesis writing and formatting assistance</p>
+                        </div>
+                      </div>
+                      <Button 
+                        onClick={() => window.open('https://wa.me/254707947594?text=Hello! I need help with academic research.', '_blank')}
+                        className="bg-blue-600 hover:bg-blue-700"
+                        size="lg"
+                      >
+                        <MessageSquare className="h-5 w-5 mr-2" />
+                        Consult Research Expert
+                      </Button>
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+          </div>
+          
+          {/* Desktop Version */}
+          <div className="hidden md:block">
+            <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+              <CardHeader className="text-center">
+                <CardTitle className="text-xl md:text-2xl text-gray-800 mb-4 flex items-center justify-center gap-2">
+                  <BookOpen className="h-6 w-6 text-blue-600" />
+                  Academic Research Support
+                </CardTitle>
+                <CardDescription className="text-gray-600">
+                  Professional research assistance for medical students at affordable rates
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center">
+                  <p className="text-gray-700 mb-6 max-w-2xl mx-auto">
+                    Get expert help with research papers, case studies, assignments, and thesis formatting. 
+                    Our academic experts provide high-quality assistance at student-friendly prices.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                      <h4 className="font-semibold text-blue-900 mb-2">Research Papers</h4>
+                      <p className="text-sm text-gray-600">Complete research writing and editing</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                      <h4 className="font-semibold text-blue-900 mb-2">Case Studies</h4>
+                      <p className="text-sm text-gray-600">Medical case study analysis and formatting</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                      <h4 className="font-semibold text-blue-900 mb-2">Thesis Support</h4>
+                      <p className="text-sm text-gray-600">Thesis writing and formatting assistance</p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => window.open('https://wa.me/254707947594?text=Hello! I need help with academic research.', '_blank')}
+                    className="bg-blue-600 hover:bg-blue-700"
+                    size="lg"
+                  >
+                    <MessageSquare className="h-5 w-5 mr-2" />
+                    Consult Research Expert
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Partner Institutions - Collapsible on Mobile */}
+        <div className="max-w-6xl mx-auto mb-6 md:mb-16">
+          <div className="md:hidden">
+            <Collapsible open={partnersOpen} onOpenChange={setPartnersOpen}>
+              <Card>
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="text-center cursor-pointer">
+                    <CardTitle className="text-lg text-gray-800 mb-2 flex items-center justify-center gap-2">
+                      Partner Medical Institutions
+                      {partnersOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </CardTitle>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
+                        {[
+                          { name: "Jordan Medical College", campus: "Kitui Campus", color: "blue" },
+                          { name: "KMTC Kitui", fullName: "Kenya Medical Training College", color: "green" },
+                          { name: "KMTC Mbooni", fullName: "Kenya Medical Training College", color: "purple" },
+                          { name: "KMTC Thika", fullName: "Kenya Medical Training College", color: "orange" },
+                          { name: "KMTC Wajir", fullName: "Kenya Medical Training College", color: "red" },
+                          { name: "KTMC Thika", fullName: "Other Medical Institutions", color: "teal" },
+                        ].map((institution, index) => (
+                          <div key={index} className={`bg-${institution.color}-50 p-4 rounded-lg text-center flex-shrink-0 w-48`}>
+                            <GraduationCap className={`h-8 w-8 text-${institution.color}-600 mx-auto mb-2`} />
+                            <h4 className={`font-semibold text-${institution.color}-900 text-sm`}>{institution.name}</h4>
+                            <p className={`text-xs text-${institution.color}-700`}>{institution.campus || institution.fullName}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+          </div>
+          
+          {/* Desktop Version */}
+          <div className="hidden md:block">
+            <Card>
+              <CardHeader className="text-center">
+                <CardTitle className="text-xl md:text-2xl text-gray-800 mb-4">
+                  Partner Medical Institutions
+                </CardTitle>
+                <CardDescription className="text-gray-600">
+                  We proudly accommodate students from leading medical training institutions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                    <GraduationCap className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                    <h4 className="font-semibold text-blue-900">Jordan Medical College</h4>
+                    <p className="text-sm text-blue-700">Kitui Campus</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg text-center">
+                    <GraduationCap className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                    <h4 className="font-semibold text-green-900">KMTC Kitui</h4>
+                    <p className="text-sm text-green-700">Kenya Medical Training College</p>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg text-center">
+                    <GraduationCap className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                    <h4 className="font-semibold text-purple-900">KMTC Mbooni</h4>
+                    <p className="text-sm text-purple-700">Kenya Medical Training College</p>
+                  </div>
+                  <div className="bg-orange-50 p-4 rounded-lg text-center">
+                    <GraduationCap className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+                    <h4 className="font-semibold text-orange-900">KMTC Thika</h4>
+                    <p className="text-sm text-orange-700">Kenya Medical Training College</p>
+                  </div>
+                  <div className="bg-red-50 p-4 rounded-lg text-center">
+                    <GraduationCap className="h-8 w-8 text-red-600 mx-auto mb-2" />
+                    <h4 className="font-semibold text-red-900">KMTC Wajir</h4>
+                    <p className="text-sm text-red-700">Kenya Medical Training College</p>
+                  </div>
+                  <div className="bg-teal-50 p-4 rounded-lg text-center">
+                    <GraduationCap className="h-8 w-8 text-teal-600 mx-auto mb-2" />
+                    <h4 className="font-semibold text-teal-900">KTMC Thika</h4>
+                    <p className="text-sm text-teal-700">Other Medical Institutions</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
         {/* Contact Information */}
         <div className="max-w-4xl mx-auto">
           <Card className="border-2 border-blue-200">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-gray-800">Ready to Move In?</CardTitle>
+              <CardTitle className="text-xl md:text-2xl text-gray-800">Ready to Move In?</CardTitle>
               <CardDescription>
                 Contact us today to secure your accommodation
               </CardDescription>

@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Users, Home, Wrench, DollarSign, Bell, LogOut } from 'lucide-react';
+import { Building2, Users, Home, Wrench, DollarSign, Bell, LogOut, Menu } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import HousesManagement from './HousesManagement';
@@ -44,7 +44,8 @@ const AdminDashboard = ({ user, onSignOut }: AdminDashboardProps) => {
       const { data: tenants } = await supabase
         .from('profiles')
         .select('id')
-        .eq('role', 'tenant');
+        .eq('role', 'tenant')
+        .is('deleted_at', null);
       
       // Get pending maintenance requests
       const { data: requests } = await supabase
@@ -95,98 +96,112 @@ const AdminDashboard = ({ user, onSignOut }: AdminDashboardProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <Building2 className="h-8 w-8 text-blue-600 mr-3" />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-sm text-gray-600">Welcome back, {user?.user_metadata?.full_name || user?.email}</p>
+      {/* Mobile-First Header */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center min-w-0 flex-1">
+              <Building2 className="h-6 w-6 md:h-8 md:w-8 text-blue-600 mr-2 md:mr-3 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg md:text-2xl font-bold text-gray-900 truncate">Admin Dashboard</h1>
+                <p className="text-xs md:text-sm text-gray-600 truncate">
+                  {user?.user_metadata?.full_name || user?.email}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => window.location.href = '/'}>
-              <Home className="h-4 w-4 mr-2" />
-              Home
-            </Button>
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
+            <div className="flex gap-1 md:gap-2 flex-shrink-0">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.location.href = '/'}
+                className="px-2 md:px-4"
+              >
+                <Home className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Home</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleSignOut}
+                className="px-2 md:px-4"
+              >
+                <LogOut className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Sign Out</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="px-4 py-6">
+        {/* Quick Stats - Mobile Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Houses</CardTitle>
-              <Home className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalHouses}</div>
-              <div className="flex gap-2 mt-2">
-                <Badge variant="default">{stats.occupiedHouses} Occupied</Badge>
-                <Badge variant="secondary">{stats.vacantHouses} Vacant</Badge>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Home className="h-4 w-4 text-muted-foreground" />
+                <span className="text-xs md:text-sm font-medium">Houses</span>
+              </div>
+              <div className="text-xl md:text-2xl font-bold">{stats.totalHouses}</div>
+              <div className="flex flex-wrap gap-1 mt-2">
+                <Badge variant="default" className="text-xs">{stats.occupiedHouses} Occupied</Badge>
+                <Badge variant="secondary" className="text-xs">{stats.vacantHouses} Vacant</Badge>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Tenants</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalTenants}</div>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span className="text-xs md:text-sm font-medium">Tenants</span>
+              </div>
+              <div className="text-xl md:text-2xl font-bold">{stats.totalTenants}</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
-              <Wrench className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pendingRequests}</div>
+          <Card className="col-span-2 md:col-span-1">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Wrench className="h-4 w-4 text-muted-foreground" />
+                <span className="text-xs md:text-sm font-medium">Pending</span>
+              </div>
+              <div className="text-xl md:text-2xl font-bold">{stats.pendingRequests}</div>
               {stats.pendingRequests > 0 && (
-                <Badge variant="destructive" className="mt-2">Needs Attention</Badge>
+                <Badge variant="destructive" className="mt-2 text-xs">Needs Attention</Badge>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Management Tabs */}
+        {/* Mobile-Optimized Management Tabs */}
         <Tabs defaultValue="houses" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="houses">Houses</TabsTrigger>
-            <TabsTrigger value="tenants">Tenants</TabsTrigger>
-            <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
-            <TabsTrigger value="rent">Rent</TabsTrigger>
-            <TabsTrigger value="announcements">Announcements</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 h-auto">
+            <TabsTrigger value="houses" className="text-xs py-3">Houses</TabsTrigger>
+            <TabsTrigger value="tenants" className="text-xs py-3">Tenants</TabsTrigger>
+            <TabsTrigger value="maintenance" className="text-xs py-3">Maintenance</TabsTrigger>
+            <TabsTrigger value="rent" className="text-xs py-3">Rent</TabsTrigger>
+            <TabsTrigger value="announcements" className="text-xs py-3">News</TabsTrigger>
           </TabsList>
 
           <TabsContent value="houses">
-            <HousesManagement onStatsUpdate={fetchStats} />
+            <HousesManagement />
           </TabsContent>
 
           <TabsContent value="tenants">
-            <TenantsManagement onStatsUpdate={fetchStats} />
+            <TenantsManagement />
           </TabsContent>
 
           <TabsContent value="maintenance">
-            <MaintenanceManagement onStatsUpdate={fetchStats} />
+            <MaintenanceManagement />
           </TabsContent>
 
           <TabsContent value="rent">
-            <RentManagement onStatsUpdate={fetchStats} />
+            <RentManagement />
           </TabsContent>
 
           <TabsContent value="announcements">
-            <AnnouncementsManagement onStatsUpdate={fetchStats} />
+            <AnnouncementsManagement />
           </TabsContent>
         </Tabs>
       </div>

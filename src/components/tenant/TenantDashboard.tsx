@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Home, DollarSign, Bell, LogOut, Wrench, AlertCircle, MessageSquare } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Users, Home, DollarSign, Bell, LogOut, Wrench, AlertCircle, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import TenantProfile from './TenantProfile';
@@ -33,6 +34,8 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
     announcements: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [roomOpen, setRoomOpen] = useState(false);
+  const [payRentOpen, setPayRentOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -153,42 +156,51 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
       </div>
 
       <div className="px-4 py-6 space-y-6">
-        {/* House Assignment Card - Mobile Optimized */}
+        {/* Collapsible House Assignment Card - Mobile Optimized */}
         {stats.assignment ? (
-          <Card className="border-l-4 border-l-green-500">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Home className="h-5 w-5 text-green-600" />
-                Your Room
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 gap-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Room:</span>
-                  <span className="font-semibold">{stats.assignment.house.room_name}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Location:</span>
-                  <span className="font-semibold text-right">{stats.assignment.house.floor} Floor - {stats.assignment.house.section}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Monthly Rent:</span>
-                  <span className="font-semibold text-green-600">KSh {stats.assignment.house.price.toLocaleString()}</span>
-                </div>
-              </div>
-              {stats.assignment.house.amenities && stats.assignment.house.amenities.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm text-gray-600 mb-2">Amenities:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {stats.assignment.house.amenities.map((amenity: string, index: number) => (
-                      <Badge key={index} variant="outline" className="text-xs">{amenity}</Badge>
-                    ))}
+          <Collapsible open={roomOpen} onOpenChange={setRoomOpen}>
+            <Card className="border-l-4 border-l-green-500">
+              <CollapsibleTrigger asChild>
+                <CardHeader className="pb-3 cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Home className="h-5 w-5 text-green-600" />
+                      Your Room
+                    </CardTitle>
+                    {roomOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent>
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Room:</span>
+                      <span className="font-semibold">{stats.assignment.house.room_name}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Location:</span>
+                      <span className="font-semibold text-right">{stats.assignment.house.floor} Floor - {stats.assignment.house.section}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Monthly Rent:</span>
+                      <span className="font-semibold text-green-600">KSh {stats.assignment.house.price.toLocaleString()}</span>
+                    </div>
+                  </div>
+                  {stats.assignment.house.amenities && stats.assignment.house.amenities.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-600 mb-2">Amenities:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {stats.assignment.house.amenities.map((amenity: string, index: number) => (
+                          <Badge key={index} variant="outline" className="text-xs">{amenity}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
         ) : (
           <Card className="border-l-4 border-l-orange-500">
             <CardContent className="p-6">
@@ -201,8 +213,25 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
           </Card>
         )}
 
-        {/* Pay Rent Card - Mobile Optimized */}
-        <PayRent assignment={stats.assignment} />
+        {/* Collapsible Pay Rent Card - Mobile Optimized */}
+        <Collapsible open={payRentOpen} onOpenChange={setPayRentOpen}>
+          <Card className="border-l-4 border-l-blue-500">
+            <CollapsibleTrigger asChild>
+              <CardHeader className="pb-3 cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <DollarSign className="h-5 w-5 text-blue-600" />
+                    Pay Your Rent
+                  </CardTitle>
+                  {payRentOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </div>
+              </CollapsibleTrigger>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <PayRent assignment={stats.assignment} />
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
         {/* Community WhatsApp Group */}
         <Card className="border-l-4 border-l-blue-500">
