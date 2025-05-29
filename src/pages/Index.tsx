@@ -477,8 +477,8 @@ const Index = () => {
                   </div>
                   <div className="bg-purple-50 p-4 rounded-lg text-center">
                     <GraduationCap className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                    <h4 className="font-semibold text-purple-900">KMTC Mbooni</h4>
-                    <p className="text-sm text-purple-700">Kenya Medical Training College</p>
+                    <h4 className="font-semibold text-purple-900">Thika</h4>
+                    <p className="text-sm text-purple-700">Medical School</p>
                   </div>
                   <div className="bg-orange-50 p-4 rounded-lg text-center">
                     <GraduationCap className="h-8 w-8 text-orange-600 mx-auto mb-2" />
@@ -492,7 +492,7 @@ const Index = () => {
                   </div>
                   <div className="bg-teal-50 p-4 rounded-lg text-center">
                     <GraduationCap className="h-8 w-8 text-teal-600 mx-auto mb-2" />
-                    <h4 className="font-semibold text-teal-900">KTMC Thika</h4>
+                    <h4 className="font-semibold text-teal-900">Univerities offering medical courses</h4>
                     <p className="text-sm text-teal-700">Other Medical Institutions</p>
                   </div>
                 </div>
@@ -517,7 +517,7 @@ const Index = () => {
                   <div className="space-y-3">
                     <div className="flex items-center justify-center md:justify-start gap-2">
                       <Phone className="h-4 w-4 text-green-600" />
-                      <span>+254 707 947 594</span>
+                      <span>+254 716722003</span>
                     </div>
                     <div className="flex items-center justify-center md:justify-start gap-2">
                       <Mail className="h-4 w-4 text-blue-600" />
