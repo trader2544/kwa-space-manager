@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Users, Settings, Bell, Home, Wrench, Trash2, Wifi, Shield, Droplets, BookOpen, Phone, Mail, MapPin, GraduationCap } from 'lucide-react';
+import { Building2, Users, Settings, Bell, Home, Wrench, Trash2, Wifi, Shield, Droplets, BookOpen, Phone, Mail, MapPin, GraduationCap, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import AuthPage from '@/components/auth/AuthPage';
@@ -20,7 +20,26 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check for existing session
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
+      
+      if (session?.user) {
+        setUser(session.user);
+        // Defer the profile fetch to avoid blocking the auth state change
+        setTimeout(async () => {
+          await fetchUserProfile(session.user.id);
+        }, 0);
+        setShowAuth(false);
+      } else {
+        setUser(null);
+        setProfile(null);
+        setUserType(null);
+        setLoading(false);
+      }
+    });
+
+    // THEN check for existing session
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -37,36 +56,30 @@ const Index = () => {
 
     checkSession();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        await fetchUserProfile(session.user.id);
-        setShowAuth(false);
-      } else {
-        setUser(null);
-        setProfile(null);
-        setUserType(null);
-        setShowAuth(false);
-      }
-    });
-
     return () => subscription.unsubscribe();
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+      
+      console.log('Profile data:', data);
       setProfile(data);
-      setUserType(data.role as 'admin' | 'tenant');
+      setUserType(data?.role as 'admin' | 'tenant');
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching profile:', error);
+      setLoading(false);
       toast({
         title: "Error",
         description: "Failed to fetch user profile.",
@@ -81,6 +94,7 @@ const Index = () => {
     setUserType(null);
     setShowAuth(false);
     setShowSearch(false);
+    setLoading(false);
   };
 
   if (loading) {
@@ -109,9 +123,19 @@ const Index = () => {
               <Building2 className="h-8 w-8 text-green-600 mr-3" />
               <h1 className="text-2xl font-bold text-gray-900">Available Rooms</h1>
             </div>
-            <Button variant="outline" onClick={() => setShowSearch(false)}>
-              Back to Home
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowSearch(false)}>
+                Back to Home
+              </Button>
+              {user && (
+                <Button onClick={() => {
+                  setShowSearch(false);
+                  // Will show dashboard since user is logged in
+                }}>
+                  Dashboard
+                </Button>
+              )}
+            </div>
           </div>
         </div>
         <div className="container mx-auto px-4 py-8">
@@ -156,6 +180,15 @@ const Index = () => {
               <span>Students Only</span>
             </div>
           </div>
+          {user && (
+            <div className="mt-4">
+              <Button onClick={() => {
+                // Will show dashboard since user is logged in
+              }}>
+                Go to Dashboard
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Hero CTA */}
@@ -184,6 +217,51 @@ const Index = () => {
                   className="text-lg px-8"
                 >
                   Student Portal
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Research Services Section */}
+        <div className="max-w-6xl mx-auto mb-8 md:mb-16">
+          <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+            <CardHeader className="text-center">
+              <CardTitle className="text-xl md:text-2xl text-gray-800 mb-4 flex items-center justify-center gap-2">
+                <BookOpen className="h-6 w-6 text-blue-600" />
+                Academic Research Support
+              </CardTitle>
+              <CardDescription className="text-gray-600">
+                Professional research assistance for medical students at affordable rates
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center">
+                <p className="text-gray-700 mb-6 max-w-2xl mx-auto">
+                  Get expert help with research papers, case studies, assignments, and thesis formatting. 
+                  Our academic experts provide high-quality assistance at student-friendly prices.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 className="font-semibold text-blue-900 mb-2">Research Papers</h4>
+                    <p className="text-sm text-gray-600">Complete research writing and editing</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 className="font-semibold text-blue-900 mb-2">Case Studies</h4>
+                    <p className="text-sm text-gray-600">Medical case study analysis and formatting</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 className="font-semibold text-blue-900 mb-2">Thesis Support</h4>
+                    <p className="text-sm text-gray-600">Thesis writing and formatting assistance</p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => window.open('https://wa.me/254707947594?text=Hello! I need help with academic research.', '_blank')}
+                  className="bg-blue-600 hover:bg-blue-700"
+                  size="lg"
+                >
+                  <MessageSquare className="h-5 w-5 mr-2" />
+                  Consult Research Expert
                 </Button>
               </div>
             </CardContent>

@@ -63,19 +63,20 @@ const TenantProfile = ({ user, assignment, onUpdate }: TenantProfileProps) => {
             Profile Information
           </CardTitle>
           <CardDescription>
-            Update your personal information
+            Your personal information (read-only)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div>
               <Label htmlFor="fullName">Full Name</Label>
               <Input
                 id="fullName"
                 value={profile.full_name}
-                onChange={(e) => setProfile(prev => ({ ...prev, full_name: e.target.value }))}
-                placeholder="Your full name"
+                disabled
+                className="bg-gray-50"
               />
+              <p className="text-xs text-gray-500 mt-1">Contact admin to change</p>
             </div>
             
             <div>
@@ -83,9 +84,10 @@ const TenantProfile = ({ user, assignment, onUpdate }: TenantProfileProps) => {
               <Input
                 id="phone"
                 value={profile.phone}
-                onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="+254..."
+                disabled
+                className="bg-gray-50"
               />
+              <p className="text-xs text-gray-500 mt-1">Contact admin to change</p>
             </div>
             
             <div>
@@ -96,15 +98,8 @@ const TenantProfile = ({ user, assignment, onUpdate }: TenantProfileProps) => {
                 disabled
                 className="bg-gray-50"
               />
-              <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+              <p className="text-xs text-gray-500 mt-1">Contact admin to change</p>
             </div>
-          </div>
-          
-          <div className="flex justify-end">
-            <Button onClick={updateProfile} disabled={loading}>
-              <Save className="h-4 w-4 mr-2" />
-              {loading ? 'Saving...' : 'Save Changes'}
-            </Button>
           </div>
         </CardContent>
       </Card>

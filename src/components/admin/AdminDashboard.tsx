@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -104,10 +105,16 @@ const AdminDashboard = ({ user, onSignOut }: AdminDashboardProps) => {
               <p className="text-sm text-gray-600">Welcome back, {user?.user_metadata?.full_name || user?.email}</p>
             </div>
           </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => window.location.href = '/'}>
+              <Home className="h-4 w-4 mr-2" />
+              Home
+            </Button>
+            <Button variant="outline" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -167,19 +174,19 @@ const AdminDashboard = ({ user, onSignOut }: AdminDashboardProps) => {
           </TabsContent>
 
           <TabsContent value="tenants">
-            <TenantsManagement />
+            <TenantsManagement onStatsUpdate={fetchStats} />
           </TabsContent>
 
           <TabsContent value="maintenance">
-            <MaintenanceManagement />
+            <MaintenanceManagement onStatsUpdate={fetchStats} />
           </TabsContent>
 
           <TabsContent value="rent">
-            <RentManagement />
+            <RentManagement onStatsUpdate={fetchStats} />
           </TabsContent>
 
           <TabsContent value="announcements">
-            <AnnouncementsManagement />
+            <AnnouncementsManagement onStatsUpdate={fetchStats} />
           </TabsContent>
         </Tabs>
       </div>

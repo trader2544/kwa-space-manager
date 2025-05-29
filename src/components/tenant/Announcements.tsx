@@ -15,7 +15,7 @@ interface Announcement {
   created_at: string;
   admin: {
     full_name: string;
-  };
+  } | null;
 }
 
 const Announcements = () => {
@@ -29,6 +29,8 @@ const Announcements = () => {
 
   const fetchAnnouncements = async () => {
     try {
+      console.log('Fetching announcements...');
+      
       const { data, error } = await supabase
         .from('announcements')
         .select(`
@@ -38,9 +40,15 @@ const Announcements = () => {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching announcements:', error);
+        throw error;
+      }
+      
+      console.log('Fetched announcements:', data);
       setAnnouncements(data || []);
     } catch (error: any) {
+      console.error('Error in fetchAnnouncements:', error);
       toast({
         title: "Error",
         description: "Failed to fetch announcements.",
@@ -79,16 +87,20 @@ const Announcements = () => {
               <Card key={announcement.id} className="border-l-4 border-l-blue-500">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
-                    <div className="space-y-1">
+                    <div className="space-y-1 flex-1">
                       <CardTitle className="text-lg">{announcement.title}</CardTitle>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Calendar className="h-4 w-4" />
                         <span>{new Date(announcement.created_at).toLocaleDateString()}</span>
-                        <span>•</span>
-                        <span>By {announcement.admin.full_name}</span>
+                        {announcement.admin && (
+                          <>
+                            <span>•</span>
+                            <span>By {announcement.admin.full_name}</span>
+                          </>
+                        )}
                       </div>
                     </div>
-                    <Badge variant="outline" className="capitalize">
+                    <Badge variant="outline" className="capitalize ml-2">
                       {announcement.target_audience.replace('_', ' ')}
                     </Badge>
                   </div>
