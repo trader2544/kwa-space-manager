@@ -17,7 +17,7 @@ interface House {
   section: string;
   price: number;
   amenities: string[];
-  description: string;
+  description?: string;
   is_vacant: boolean;
 }
 
@@ -55,7 +55,12 @@ const HouseSearch = () => {
       }
       
       console.log('Fetched vacant houses:', data);
-      setHouses(data || []);
+      // Ensure description field exists, even if null/empty
+      const housesWithDescription = (data || []).map(house => ({
+        ...house,
+        description: house.description || ''
+      }));
+      setHouses(housesWithDescription);
     } catch (error: any) {
       console.error('Error in fetchVacantHouses:', error);
       toast({

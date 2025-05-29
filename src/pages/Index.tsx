@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Users, Settings, Bell, Home, Wrench, Trash2, Wifi, Shield, Droplets, BookOpen, Phone, Mail, MapPin, GraduationCap, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Building2, Users, Settings, Bell, Home, Wrench, Trash2, Wifi, Shield, Droplets, BookOpen, Phone, Mail, MapPin, GraduationCap, MessageSquare, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import AuthPage from '@/components/auth/AuthPage';
@@ -235,7 +236,7 @@ const Index = () => {
           {/* Mobile Carousel */}
           <div className="md:hidden">
             <div className="overflow-x-auto">
-              <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
+              <div className="flex gap-4 pb-4 animate-[scroll_15s_linear_infinite]" style={{ width: 'max-content' }}>
                 {[
                   { icon: Shield, title: "24/7 Security", desc: "Round-the-clock security for complete peace of mind and safety", color: "green" },
                   { icon: Wifi, title: "Free WiFi", desc: "High-speed internet connectivity for all your study and research needs", color: "blue" },
@@ -243,6 +244,10 @@ const Index = () => {
                   { icon: BookOpen, title: "Study-Friendly Environment", desc: "Quiet, conducive atmosphere designed for academic excellence", color: "purple" },
                   { icon: Home, title: "Furnished Rooms", desc: "Fully furnished accommodations with essential amenities included", color: "orange" },
                   { icon: Users, title: "Exclusive Community", desc: "Students-only residence fostering academic collaboration", color: "teal" },
+                  // Duplicate for seamless loop
+                  { icon: Shield, title: "24/7 Security", desc: "Round-the-clock security for complete peace of mind and safety", color: "green" },
+                  { icon: Wifi, title: "Free WiFi", desc: "High-speed internet connectivity for all your study and research needs", color: "blue" },
+                  { icon: Droplets, title: "24/7 Water Supply", desc: "Consistent clean water supply ensuring comfort and convenience", color: "cyan" },
                 ].map((feature, index) => (
                   <div key={index} className="text-center flex-shrink-0 w-64">
                     <div className={`mx-auto mb-4 p-4 bg-${feature.color}-100 rounded-full w-16 h-16 flex items-center justify-center`}>
@@ -420,7 +425,7 @@ const Index = () => {
                 <CollapsibleContent>
                   <CardContent>
                     <div className="overflow-x-auto">
-                      <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
+                      <div className="flex gap-4 pb-4 animate-[scroll_20s_linear_infinite]" style={{ width: 'max-content' }}>
                         {[
                           { name: "Jordan Medical College", campus: "Kitui Campus", color: "blue" },
                           { name: "KMTC Kitui", fullName: "Kenya Medical Training College", color: "green" },
@@ -428,6 +433,10 @@ const Index = () => {
                           { name: "KMTC Thika", fullName: "Kenya Medical Training College", color: "orange" },
                           { name: "KMTC Wajir", fullName: "Kenya Medical Training College", color: "red" },
                           { name: "KTMC Thika", fullName: "Other Medical Institutions", color: "teal" },
+                          // Duplicate for seamless loop
+                          { name: "Jordan Medical College", campus: "Kitui Campus", color: "blue" },
+                          { name: "KMTC Kitui", fullName: "Kenya Medical Training College", color: "green" },
+                          { name: "KMTC Mbooni", fullName: "Kenya Medical Training College", color: "purple" },
                         ].map((institution, index) => (
                           <div key={index} className={`bg-${institution.color}-50 p-4 rounded-lg text-center flex-shrink-0 w-48`}>
                             <GraduationCap className={`h-8 w-8 text-${institution.color}-600 mx-auto mb-2`} />
