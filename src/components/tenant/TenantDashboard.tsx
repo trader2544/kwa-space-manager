@@ -225,7 +225,7 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
                   </CardTitle>
                   {payRentOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
-              </CollapsibleTrigger>
+              </CardHeader>
             </CollapsibleTrigger>
             <CollapsibleContent>
               <PayRent assignment={stats.assignment} />

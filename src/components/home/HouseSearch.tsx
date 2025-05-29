@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Home, Search, Filter, MapPin, DollarSign, Bed, MessageSquare } from 'lucide-react';
+import { Home, Search, Filter, MapPin, DollarSign, MessageSquare } from 'lucide-react';
 
 interface House {
   id: string;
@@ -288,10 +288,10 @@ const HouseSearch = () => {
                   Clear All Filters
                 </Button>
               )}
-            </CardContent>
-          </Card>
-        )}
-      </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
