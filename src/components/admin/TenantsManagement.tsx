@@ -62,17 +62,20 @@ const TenantsManagement = ({ onStatsUpdate }: TenantsManagementProps) => {
     try {
       console.log('Fetching tenants...');
       
+      // First get all tenant profiles
       const { data: allTenants, error: tenantsError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('role', 'tenant')
-        .is('deleted_at', null);
+        .eq('role', 'tenant');
 
       if (tenantsError) {
         console.error('Error fetching tenants:', tenantsError);
         throw tenantsError;
       }
 
+      console.log('All tenants found:', allTenants?.length);
+
+      // Then get their assignments
       const tenantsWithAssignments = await Promise.all(
         (allTenants || []).map(async (tenant) => {
           const { data: assignment, error: assignmentError } = await supabase
@@ -106,6 +109,7 @@ const TenantsManagement = ({ onStatsUpdate }: TenantsManagementProps) => {
         })
       );
 
+      console.log('Tenants with assignments:', tenantsWithAssignments);
       setTenants(tenantsWithAssignments);
     } catch (error: any) {
       console.error('Error in fetchTenants:', error);
@@ -232,7 +236,7 @@ const TenantsManagement = ({ onStatsUpdate }: TenantsManagementProps) => {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading tenants...</p>
         </div>
       </div>

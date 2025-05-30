@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { DollarSign, Search, Calendar, User, Home, AlertCircle } from 'lucide-react';
+import { DollarSign, Search, Calendar, User, Home, AlertCircle, Plus } from 'lucide-react';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, Label } from '@radix-ui/react-dialog';
 
 interface RentPayment {
   id: string;
@@ -40,11 +40,39 @@ const RentManagement = ({ onStatsUpdate }: RentManagementProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [monthFilter, setMonthFilter] = useState(new Date().toISOString().slice(0, 7));
+  const [isAdding, setIsAdding] = useState(false);
+  const [newPayment, setNewPayment] = useState({
+    tenant_id: '',
+    amount: '',
+    payment_method: 'mpesa',
+    payment_reference: '',
+  });
+  const [tenants, setTenants] = useState<any[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchPayments();
+    fetchTenants();
   }, [monthFilter]);
+
+  const fetchTenants = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tenant_assignments')
+        .select(`
+          tenant_id,
+          house_id,
+          tenant:profiles!tenant_assignments_tenant_id_fkey(full_name, email),
+          house:houses!tenant_assignments_house_id_fkey(room_name, price)
+        `)
+        .eq('is_active', true);
+
+      if (error) throw error;
+      setTenants(data || []);
+    } catch (error: any) {
+      console.error('Error fetching tenants:', error);
+    }
+  };
 
   const fetchPayments = async () => {
     try {
@@ -73,6 +101,56 @@ const RentManagement = ({ onStatsUpdate }: RentManagementProps) => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const addPayment = async () => {
+    if (!newPayment.tenant_id || !newPayment.amount) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsAdding(true);
+      
+      const selectedTenant = tenants.find(t => t.tenant_id === newPayment.tenant_id);
+      if (!selectedTenant) throw new Error('Tenant not found');
+
+      const { error } = await supabase
+        .from('rent_payments')
+        .insert({
+          tenant_id: newPayment.tenant_id,
+          house_id: selectedTenant.house_id,
+          amount: parseInt(newPayment.amount),
+          payment_method: newPayment.payment_method,
+          payment_reference: newPayment.payment_reference,
+          month_year: monthFilter,
+          status: 'paid',
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Payment added successfully!",
+      });
+
+      await fetchPayments();
+      onStatsUpdate();
+      setNewPayment({ tenant_id: '', amount: '', payment_method: 'mpesa', payment_reference: '' });
+    } catch (error: any) {
+      console.error('Error adding payment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add payment.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -118,6 +196,82 @@ const RentManagement = ({ onStatsUpdate }: RentManagementProps) => {
               </div>
             </div>
             <div className="flex gap-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="mx-4 max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>Add Payment</DialogTitle>
+                    <DialogDescription>
+                      Record a new rent payment
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-xs font-medium">Tenant</Label>
+                      <Select value={newPayment.tenant_id} onValueChange={(value) => setNewPayment(prev => ({ ...prev, tenant_id: value }))}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Choose tenant" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {tenants.map((tenant) => (
+                            <SelectItem key={tenant.tenant_id} value={tenant.tenant_id}>
+                              {tenant.tenant.full_name} - {tenant.house.room_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-xs font-medium">Amount (KSh)</Label>
+                      <Input
+                        type="number"
+                        value={newPayment.amount}
+                        onChange={(e) => setNewPayment(prev => ({ ...prev, amount: e.target.value }))}
+                        placeholder="Enter amount"
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label className="text-xs font-medium">Payment Method</Label>
+                      <Select value={newPayment.payment_method} onValueChange={(value) => setNewPayment(prev => ({ ...prev, payment_method: value }))}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="mpesa">M-Pesa</SelectItem>
+                          <SelectItem value="bank">Bank Transfer</SelectItem>
+                          <SelectItem value="cash">Cash</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-xs font-medium">Reference (Optional)</Label>
+                      <Input
+                        value={newPayment.payment_reference}
+                        onChange={(e) => setNewPayment(prev => ({ ...prev, payment_reference: e.target.value }))}
+                        placeholder="Payment reference"
+                        className="mt-1"
+                      />
+                    </div>
+                    
+                    <Button 
+                      onClick={addPayment} 
+                      disabled={isAdding}
+                      className="w-full"
+                    >
+                      {isAdding ? 'Adding...' : 'Add Payment'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Badge className="bg-green-600 text-white text-xs">{monthlyStats.paid} Paid</Badge>
               <Badge className="bg-orange-500 text-white text-xs">{monthlyStats.pending} Pending</Badge>
             </div>
