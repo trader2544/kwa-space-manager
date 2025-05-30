@@ -1,0 +1,29 @@
+
+{
+  "name": "Kwa-Kamande Rental Management",
+  "short_name": "Kwa-Kamande",
+  "description": "Kwa Kamande Rental Unit Management System",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#16a34a",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/lovable-uploads/243e4579-48c7-4456-8b8b-9b0afd886343.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lovable-uploads/243e4579-48c7-4456-8b8b-9b0afd886343.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en",
+  "prefer_related_applications": false
+}
