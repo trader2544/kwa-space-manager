@@ -45,9 +45,8 @@ const AdminDashboard = ({ user, onSignOut }: AdminDashboardProps) => {
       // Get tenants count - get all profiles with tenant role and no deleted_at
       const { data: tenants, error: tenantsError } = await supabase
         .from('profiles')
-        .select('id, role, deleted_at')
-        .eq('role', 'tenant')
-        .is('deleted_at', null);
+        .select('id, role')
+        .eq('role', 'tenant');
       
       if (tenantsError) {
         console.error('Error fetching tenants:', tenantsError);

@@ -1,100 +1,97 @@
 
-// Register service worker and request notification permission
+import { supabase } from '@/integrations/supabase/client';
+
+/**
+ * Request notification permission from the user
+ * @returns {Promise<boolean>} Whether permission was granted
+ */
 export const requestNotificationPermission = async (): Promise<boolean> => {
   if (!('Notification' in window)) {
     console.log('This browser does not support notifications');
     return false;
   }
 
-  if (Notification.permission === 'granted') {
-    return true;
-  }
-
-  if (Notification.permission !== 'denied') {
+  try {
     const permission = await Notification.requestPermission();
     return permission === 'granted';
+  } catch (error) {
+    console.error('Error requesting notification permission:', error);
+    return false;
   }
-
-  return false;
 };
 
-// Send immediate notification
-export const sendNotification = (title: string, body: string, icon?: string) => {
-  if (Notification.permission === 'granted') {
-    new Notification(title, {
+/**
+ * Send a notification to the user
+ * @param {string} title - The notification title
+ * @param {string} body - The notification body text
+ * @param {object} options - Additional notification options
+ * @returns {Notification|null} The notification object or null if failed
+ */
+export const sendNotification = (title: string, body: string, options: NotificationOptions = {}): Notification | null => {
+  if (!('Notification' in window) || Notification.permission !== 'granted') {
+    console.log('Notifications not allowed');
+    return null;
+  }
+
+  try {
+    const notification = new Notification(title, {
       body,
-      icon: icon || '/favicon.ico',
+      icon: '/favicon.ico', // Use your app icon
       badge: '/favicon.ico',
-      vibrate: [200, 100, 200],
-      requireInteraction: true,
+      ...options
     });
-  }
-};
-
-// Send rent reminder notification
-export const sendRentReminder = (dueDate: string, amount: number) => {
-  if (Notification.permission === 'granted') {
-    new Notification('Rent Reminder', {
-      body: `Your rent of KSh ${amount.toLocaleString()} is due on ${dueDate}. Pay now to avoid late fees.`,
-      icon: '/favicon.ico',
-      badge: '/favicon.ico',
-      vibrate: [200, 100, 200],
-      requireInteraction: true,
-    });
-  }
-};
-
-// Check if today is rent reminder date and send notification
-export const checkAndSendRentReminders = async (userAssignment: any) => {
-  const today = new Date();
-  const dayOfMonth = today.getDate();
-  
-  // Send reminders on 1st and 5th of each month
-  if ((dayOfMonth === 1 || dayOfMonth === 5) && userAssignment?.house) {
-    const rentAmount = userAssignment.house.price;
-    const dueDate = dayOfMonth === 1 ? '5th' : 'today';
     
-    if (dayOfMonth === 1) {
-      sendRentReminder(dueDate, rentAmount);
-    } else if (dayOfMonth === 5) {
-      // Check if rent is already paid for this month
-      const currentMonth = today.toISOString().slice(0, 7);
-      const { data: payment } = await supabase
-        .from('rent_payments')
-        .select('id')
-        .eq('tenant_id', userAssignment.tenant_id)
-        .eq('month_year', currentMonth)
-        .eq('status', 'paid')
-        .maybeSingle();
-      
-      if (!payment) {
+    return notification;
+  } catch (error) {
+    console.error('Error sending notification:', error);
+    return null;
+  }
+};
+
+/**
+ * Set up rent payment reminders on the 1st and 5th day of each month
+ */
+export const setupRentReminders = async (userId: string): Promise<void> => {
+  try {
+    // Check if notification permission is granted
+    if (Notification.permission !== 'granted') {
+      await requestNotificationPermission();
+    }
+
+    // Get current day of month
+    const today = new Date();
+    const currentDay = today.getDate();
+    
+    // Get user's payment status for the current month
+    const currentMonth = today.toISOString().slice(0, 7); // YYYY-MM format
+    
+    const { data: payment } = await supabase
+      .from('rent_payments')
+      .select('status')
+      .eq('tenant_id', userId)
+      .eq('month_year', currentMonth)
+      .eq('status', 'paid')
+      .maybeSingle();
+    
+    const hasPaid = !!payment;
+    
+    // Send notifications based on day of month and payment status
+    if (!hasPaid) {
+      if (currentDay === 1) {
         sendNotification(
-          'Final Rent Notice',
-          `Your rent is due today! Pay KSh ${rentAmount.toLocaleString()} now to avoid late fees.`
+          'Rent Due',
+          'Your monthly rent payment is due. Please pay by the 5th to avoid late fees.',
+          { tag: 'rent-reminder-1' }
+        );
+      } else if (currentDay === 5) {
+        sendNotification(
+          'Last Day for Rent Payment!',
+          'Today is the last day to pay your rent without late fees.',
+          { tag: 'rent-reminder-5', requireInteraction: true }
         );
       }
     }
+  } catch (error) {
+    console.error('Error setting up rent reminders:', error);
   }
-};
-
-// Schedule rent reminders (to be called when user logs in)
-export const scheduleRentReminders = (userAssignment: any) => {
-  // Check immediately
-  checkAndSendRentReminders(userAssignment);
-  
-  // Set up daily check at 9 AM
-  const now = new Date();
-  const tomorrow9AM = new Date(now);
-  tomorrow9AM.setDate(tomorrow9AM.getDate() + 1);
-  tomorrow9AM.setHours(9, 0, 0, 0);
-  
-  const timeUntil9AM = tomorrow9AM.getTime() - now.getTime();
-  
-  setTimeout(() => {
-    checkAndSendRentReminders(userAssignment);
-    // Then check daily
-    setInterval(() => {
-      checkAndSendRentReminders(userAssignment);
-    }, 24 * 60 * 60 * 1000); // 24 hours
-  }, timeUntil9AM);
 };
