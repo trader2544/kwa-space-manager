@@ -42,12 +42,16 @@ const AdminDashboard = ({ user, onSignOut }: AdminDashboardProps) => {
         .from('houses')
         .select('id, is_vacant');
       
-      // Get tenants count - fix to exclude deleted tenants
-      const { data: tenants } = await supabase
+      // Get tenants count - get all profiles with tenant role and no deleted_at
+      const { data: tenants, error: tenantsError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, role, deleted_at')
         .eq('role', 'tenant')
         .is('deleted_at', null);
+      
+      if (tenantsError) {
+        console.error('Error fetching tenants:', tenantsError);
+      }
       
       console.log('Active tenants found:', tenants?.length);
       

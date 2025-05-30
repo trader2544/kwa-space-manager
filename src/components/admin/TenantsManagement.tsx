@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Plus, Home, Mail, Phone } from 'lucide-react';
+import { Users, Plus, Home, Mail, Phone, MapPin } from 'lucide-react';
 
 interface Tenant {
   id: string;
@@ -39,13 +39,18 @@ interface House {
   is_vacant: boolean;
 }
 
-const TenantsManagement = () => {
+interface TenantsManagementProps {
+  onStatsUpdate: () => void;
+}
+
+const TenantsManagement = ({ onStatsUpdate }: TenantsManagementProps) => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [houses, setHouses] = useState<House[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAssigning, setIsAssigning] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<string>('');
   const [selectedHouse, setSelectedHouse] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -57,20 +62,17 @@ const TenantsManagement = () => {
     try {
       console.log('Fetching tenants...');
       
-      // First get all tenants
       const { data: allTenants, error: tenantsError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('role', 'tenant');
+        .eq('role', 'tenant')
+        .is('deleted_at', null);
 
       if (tenantsError) {
         console.error('Error fetching tenants:', tenantsError);
         throw tenantsError;
       }
 
-      console.log('All tenants:', allTenants);
-
-      // Then get their assignments separately
       const tenantsWithAssignments = await Promise.all(
         (allTenants || []).map(async (tenant) => {
           const { data: assignment, error: assignmentError } = await supabase
@@ -104,7 +106,6 @@ const TenantsManagement = () => {
         })
       );
 
-      console.log('Tenants with assignments:', tenantsWithAssignments);
       setTenants(tenantsWithAssignments);
     } catch (error: any) {
       console.error('Error in fetchTenants:', error);
@@ -129,12 +130,7 @@ const TenantsManagement = () => {
         .order('section')
         .order('room_name');
 
-      if (error) {
-        console.error('Error fetching houses:', error);
-        throw error;
-      }
-
-      console.log('Vacant houses:', data);
+      if (error) throw error;
       setHouses(data || []);
     } catch (error: any) {
       console.error('Error in fetchVacantHouses:', error);
@@ -151,9 +147,7 @@ const TenantsManagement = () => {
 
     try {
       setIsAssigning(true);
-      console.log('Assigning house:', selectedHouse, 'to tenant:', selectedTenant);
 
-      // Create tenant assignment
       const { error: assignError } = await supabase
         .from('tenant_assignments')
         .insert({
@@ -161,30 +155,23 @@ const TenantsManagement = () => {
           house_id: selectedHouse,
         });
 
-      if (assignError) {
-        console.error('Error creating assignment:', assignError);
-        throw assignError;
-      }
+      if (assignError) throw assignError;
 
-      // Update house vacancy status
       const { error: houseError } = await supabase
         .from('houses')
         .update({ is_vacant: false })
         .eq('id', selectedHouse);
 
-      if (houseError) {
-        console.error('Error updating house status:', houseError);
-        throw houseError;
-      }
+      if (houseError) throw houseError;
 
       toast({
         title: "Success",
         description: "House assigned successfully!",
       });
 
-      // Refresh data
       await fetchTenants();
       await fetchVacantHouses();
+      onStatsUpdate();
       setSelectedTenant('');
       setSelectedHouse('');
     } catch (error: any) {
@@ -201,9 +188,6 @@ const TenantsManagement = () => {
 
   const unassignHouse = async (tenantId: string, houseId: string) => {
     try {
-      console.log('Unassigning house:', houseId, 'from tenant:', tenantId);
-
-      // Deactivate assignment
       const { error: assignError } = await supabase
         .from('tenant_assignments')
         .update({ is_active: false })
@@ -211,21 +195,14 @@ const TenantsManagement = () => {
         .eq('house_id', houseId)
         .eq('is_active', true);
 
-      if (assignError) {
-        console.error('Error deactivating assignment:', assignError);
-        throw assignError;
-      }
+      if (assignError) throw assignError;
 
-      // Update house vacancy status
       const { error: houseError } = await supabase
         .from('houses')
         .update({ is_vacant: true })
         .eq('id', houseId);
 
-      if (houseError) {
-        console.error('Error updating house status:', houseError);
-        throw houseError;
-      }
+      if (houseError) throw houseError;
 
       toast({
         title: "Success",
@@ -234,6 +211,7 @@ const TenantsManagement = () => {
 
       await fetchTenants();
       await fetchVacantHouses();
+      onStatsUpdate();
     } catch (error: any) {
       console.error('Error in unassignHouse:', error);
       toast({
@@ -244,56 +222,61 @@ const TenantsManagement = () => {
     }
   };
 
+  const filteredTenants = tenants.filter(tenant =>
+    tenant.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tenant.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tenant.assignment?.house.room_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) {
     return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center">Loading tenants...</div>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading tenants...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Tenants Management
-              </CardTitle>
-              <CardDescription>
-                Manage tenant assignments and house allocations
-              </CardDescription>
+    <div className="space-y-4">
+      {/* Mobile Header Card */}
+      <Card className="border-0 shadow-lg bg-gradient-to-r from-green-50 to-green-100">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <Users className="h-6 w-6 text-green-600" />
+              <div>
+                <h2 className="font-bold text-green-900">Tenants</h2>
+                <p className="text-sm text-green-700">{filteredTenants.length} residents</p>
+              </div>
             </div>
             <Dialog>
               <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Assign House
+                <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Assign
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="mx-4 max-w-sm">
                 <DialogHeader>
-                  <DialogTitle>Assign House to Tenant</DialogTitle>
+                  <DialogTitle>Assign House</DialogTitle>
                   <DialogDescription>
-                    Select a tenant and a vacant house to create an assignment.
+                    Connect a tenant to an available room
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label>Select Tenant</Label>
+                    <Label className="text-xs font-medium">Tenant</Label>
                     <Select value={selectedTenant} onValueChange={setSelectedTenant}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose a tenant" />
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Choose tenant" />
                       </SelectTrigger>
                       <SelectContent>
                         {tenants.filter(t => !t.assignment).map((tenant) => (
                           <SelectItem key={tenant.id} value={tenant.id}>
-                            {tenant.full_name} ({tenant.email})
+                            {tenant.full_name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -301,15 +284,15 @@ const TenantsManagement = () => {
                   </div>
                   
                   <div>
-                    <Label>Select House</Label>
+                    <Label className="text-xs font-medium">Available Room</Label>
                     <Select value={selectedHouse} onValueChange={setSelectedHouse}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose a house" />
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Choose room" />
                       </SelectTrigger>
                       <SelectContent>
                         {houses.map((house) => (
                           <SelectItem key={house.id} value={house.id}>
-                            {house.room_name} - {house.floor} Floor, {house.section} (KSh {house.price.toLocaleString()})
+                            {house.room_name} - KSh {house.price.toLocaleString()}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -321,80 +304,96 @@ const TenantsManagement = () => {
                     disabled={!selectedTenant || !selectedHouse || isAssigning}
                     className="w-full"
                   >
-                    {isAssigning ? 'Assigning...' : 'Assign House'}
+                    {isAssigning ? 'Assigning...' : 'Confirm Assignment'}
                   </Button>
                 </div>
               </DialogContent>
             </Dialog>
           </div>
-        </CardHeader>
+
+          {/* Search Bar */}
+          <Input
+            placeholder="Search tenants..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="bg-white border-green-200"
+          />
+        </CardContent>
       </Card>
 
-      {/* Tenants List */}
-      <div className="grid gap-4">
-        {tenants.map((tenant) => (
-          <Card key={tenant.id}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <CardTitle className="text-lg">{tenant.full_name}</CardTitle>
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Mail className="h-3 w-3" />
-                      {tenant.email}
-                    </div>
-                    {tenant.phone && (
-                      <div className="flex items-center gap-1">
-                        <Phone className="h-3 w-3" />
-                        {tenant.phone}
-                      </div>
-                    )}
+      {/* Mobile-Native Tenant Cards */}
+      <div className="space-y-3">
+        {filteredTenants.map((tenant) => (
+          <Card key={tenant.id} className="border-0 shadow-md">
+            <CardContent className="p-4">
+              {/* Tenant Header */}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 truncate">
+                    {tenant.full_name || 'No Name'}
+                  </h3>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Mail className="h-3 w-3 text-gray-400" />
+                    <p className="text-xs text-gray-600 truncate">{tenant.email}</p>
                   </div>
+                  {tenant.phone && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <Phone className="h-3 w-3 text-gray-400" />
+                      <p className="text-xs text-gray-600">{tenant.phone}</p>
+                    </div>
+                  )}
                 </div>
-                <Badge variant="outline">Tenant</Badge>
+                <Badge variant="outline" className="text-xs bg-green-50 border-green-200 text-green-700">
+                  Tenant
+                </Badge>
               </div>
-            </CardHeader>
-            <CardContent>
+
+              {/* Assignment Status */}
               {tenant.assignment ? (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Home className="h-4 w-4 text-green-600" />
-                    <div>
-                      <p className="font-medium">{tenant.assignment.house.room_name}</p>
-                      <p className="text-sm text-gray-600">
-                        {tenant.assignment.house.floor} Floor - {tenant.assignment.house.section}
-                      </p>
-                      <p className="text-sm text-green-600 font-medium">
-                        KSh {tenant.assignment.house.price.toLocaleString()}/month
-                      </p>
-                    </div>
+                <div className="bg-blue-50 rounded-lg p-3 mb-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Home className="h-4 w-4 text-blue-600" />
+                    <span className="font-medium text-blue-900">{tenant.assignment.house.room_name}</span>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => unassignHouse(tenant.id, tenant.assignment!.house_id)}
-                  >
-                    Unassign
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3 text-blue-600" />
+                      <span className="text-blue-800">{tenant.assignment.house.floor} Floor</span>
+                    </div>
+                    <div className="text-blue-800">{tenant.assignment.house.section}</div>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-green-600">
+                      KSh {tenant.assignment.house.price.toLocaleString()}/mo
+                    </span>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => unassignHouse(tenant.id, tenant.assignment!.house_id)}
+                      className="text-xs px-2 py-1 h-7"
+                    >
+                      Remove
+                    </Button>
+                  </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center py-4 text-gray-500">
-                  <Home className="h-8 w-8 text-gray-300 mr-2" />
-                  <span>No house assigned</span>
+                <div className="bg-orange-50 rounded-lg p-3 text-center">
+                  <Home className="h-6 w-6 text-orange-400 mx-auto mb-1" />
+                  <p className="text-xs text-orange-700">No room assigned</p>
                 </div>
               )}
             </CardContent>
           </Card>
         ))}
         
-        {tenants.length === 0 && (
-          <Card>
-            <CardContent className="p-8">
-              <div className="text-center text-gray-500">
-                <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Tenants</h3>
-                <p>No tenants have been registered yet.</p>
-              </div>
+        {filteredTenants.length === 0 && (
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-8 text-center">
+              <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="font-semibold text-gray-700 mb-2">No Tenants Found</h3>
+              <p className="text-sm text-gray-500">
+                {searchTerm ? 'Try adjusting your search' : 'No tenants registered yet'}
+              </p>
             </CardContent>
           </Card>
         )}
