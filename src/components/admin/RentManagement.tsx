@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { DollarSign, Search, Calendar, User, Home, AlertCircle, Plus } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import MonthlyRentTracker from './MonthlyRentTracker';
 
 interface RentPayment {
   id: string;
@@ -31,6 +33,14 @@ interface RentPayment {
   };
 }
 
+interface MonthlyRentStats {
+  expectedTotal: number;
+  paidTotal: number;
+  remaining: number;
+  assignedTenants: number;
+  paidTenants: number;
+}
+
 interface RentManagementProps {
   onStatsUpdate: () => void;
 }
@@ -42,6 +52,14 @@ const RentManagement = ({ onStatsUpdate }: RentManagementProps) => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [monthFilter, setMonthFilter] = useState(new Date().toISOString().slice(0, 7));
   const [isAdding, setIsAdding] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [monthlyStats, setMonthlyStats] = useState<MonthlyRentStats>({
+    expectedTotal: 0,
+    paidTotal: 0,
+    remaining: 0,
+    assignedTenants: 0,
+    paidTenants: 0,
+  });
   const [newPayment, setNewPayment] = useState({
     tenant_id: '',
     amount: '',
@@ -143,6 +161,7 @@ const RentManagement = ({ onStatsUpdate }: RentManagementProps) => {
       await fetchPayments();
       onStatsUpdate();
       setNewPayment({ tenant_id: '', amount: '', payment_method: 'mpesa', payment_reference: '' });
+      setIsDialogOpen(false);
     } catch (error: any) {
       console.error('Error adding payment:', error);
       toast({
@@ -166,12 +185,6 @@ const RentManagement = ({ onStatsUpdate }: RentManagementProps) => {
     return matchesSearch && matchesStatus;
   });
 
-  const monthlyStats = {
-    total: filteredPayments.reduce((sum, p) => sum + p.amount, 0),
-    paid: filteredPayments.filter(p => p.status === 'paid').length,
-    pending: filteredPayments.filter(p => p.status === 'pending').length,
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -185,6 +198,12 @@ const RentManagement = ({ onStatsUpdate }: RentManagementProps) => {
 
   return (
     <div className="space-y-4">
+      {/* Monthly Rent Tracker */}
+      <MonthlyRentTracker 
+        monthFilter={monthFilter}
+        onStatsChange={setMonthlyStats}
+      />
+
       {/* Mobile Header Card */}
       <Card className="border-0 shadow-lg bg-gradient-to-r from-purple-50 to-purple-100">
         <CardContent className="p-4">
@@ -193,11 +212,13 @@ const RentManagement = ({ onStatsUpdate }: RentManagementProps) => {
               <DollarSign className="h-6 w-6 text-purple-600" />
               <div>
                 <h2 className="font-bold text-purple-900">Rent Management</h2>
-                <p className="text-sm text-purple-700">KSh {monthlyStats.total.toLocaleString()} collected</p>
+                <p className="text-sm text-purple-700">
+                  {filteredPayments.length} payments this month
+                </p>
               </div>
             </div>
             <div className="flex gap-2">
-              <Dialog>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
                     <Plus className="h-4 w-4 mr-1" />
@@ -208,7 +229,7 @@ const RentManagement = ({ onStatsUpdate }: RentManagementProps) => {
                   <DialogHeader>
                     <DialogTitle>Add Payment</DialogTitle>
                     <DialogDescription>
-                      Record a new rent payment
+                      Record a new rent payment for {new Date(monthFilter + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
@@ -273,8 +294,6 @@ const RentManagement = ({ onStatsUpdate }: RentManagementProps) => {
                   </div>
                 </DialogContent>
               </Dialog>
-              <Badge className="bg-green-600 text-white text-xs">{monthlyStats.paid} Paid</Badge>
-              <Badge className="bg-orange-500 text-white text-xs">{monthlyStats.pending} Pending</Badge>
             </div>
           </div>
 
