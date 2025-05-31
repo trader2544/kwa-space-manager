@@ -24,7 +24,7 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
     pendingRequests: 0,
     totalRequests: 0,
     unreadAnnouncements: 0,
-    currentRoomInfo: null as any,
+    currentAssignment: null as any,
   });
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -35,7 +35,7 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
 
   const fetchStats = async () => {
     try {
-      console.log('Fetching tenant dashboard stats...');
+      console.log('Fetching tenant dashboard stats for user:', user?.id);
       
       // Get tenant's maintenance requests
       const { data: requests } = await supabase
@@ -49,15 +49,32 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
         .select('id')
         .eq('is_active', true);
       
-      // Get tenant's current room assignment
-      const { data: assignment } = await supabase
+      // Get tenant's current room assignment with full details
+      const { data: assignment, error: assignmentError } = await supabase
         .from('tenant_assignments')
         .select(`
-          house:houses!inner(room_name, floor, section, price)
+          id,
+          assigned_at,
+          house_id,
+          houses!inner(
+            id,
+            room_name,
+            floor,
+            section,
+            price,
+            room_type,
+            amenities
+          )
         `)
         .eq('tenant_id', user?.id)
         .eq('is_active', true)
         .maybeSingle();
+
+      if (assignmentError) {
+        console.error('Error fetching assignment:', assignmentError);
+      }
+
+      console.log('Assignment data:', assignment);
 
       const pendingRequests = requests?.filter(r => r.status === 'pending').length || 0;
 
@@ -65,7 +82,7 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
         pendingRequests,
         totalRequests: requests?.length || 0,
         unreadAnnouncements: announcements?.length || 0,
-        currentRoomInfo: assignment?.house || null,
+        currentAssignment: assignment || null,
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -128,18 +145,48 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
 
       <div className="px-4 py-6 space-y-6">
         {/* Current Room Info */}
-        {stats.currentRoomInfo && (
+        {stats.currentAssignment?.houses ? (
           <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-blue-100">
             <CardContent className={isMobile ? "p-3" : "p-4"}>
               <div className="flex items-center gap-3">
                 <Home className={`text-blue-600 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
                 <div className="flex-1">
                   <h3 className={`font-bold text-blue-900 ${isMobile ? 'text-sm' : 'text-lg'}`}>
-                    {stats.currentRoomInfo.room_name}
+                    {stats.currentAssignment.houses.room_name}
                   </h3>
                   <p className={`text-blue-700 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                    {stats.currentRoomInfo.floor} Floor, {stats.currentRoomInfo.section} | 
-                    KSh {stats.currentRoomInfo.price?.toLocaleString()}/month
+                    {stats.currentAssignment.houses.floor} Floor, {stats.currentAssignment.houses.section}
+                  </p>
+                  <p className={`text-blue-700 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                    {stats.currentAssignment.houses.room_type} | KSh {stats.currentAssignment.houses.price?.toLocaleString()}/month
+                  </p>
+                  {stats.currentAssignment.houses.amenities && stats.currentAssignment.houses.amenities.length > 0 && (
+                    <div className="mt-2">
+                      <p className={`text-blue-600 font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Amenities:</p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {stats.currentAssignment.houses.amenities.map((amenity: string, index: number) => (
+                          <Badge key={index} variant="secondary" className="text-xs bg-blue-100 text-blue-800">
+                            {amenity}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border-0 shadow-lg bg-gradient-to-r from-orange-50 to-orange-100">
+            <CardContent className={isMobile ? "p-3" : "p-4"}>
+              <div className="flex items-center gap-3">
+                <Home className={`text-orange-600 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                <div className="flex-1">
+                  <h3 className={`font-bold text-orange-900 ${isMobile ? 'text-sm' : 'text-lg'}`}>
+                    No Room Assigned
+                  </h3>
+                  <p className={`text-orange-700 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                    Please contact management for room assignment
                   </p>
                 </div>
               </div>
@@ -150,33 +197,33 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
         {/* Mobile-Native Stats Cards - Reduced size */}
         <div className={`grid grid-cols-3 ${isMobile ? 'gap-2' : 'gap-3'}`}>
           <Card className={`border-0 shadow-sm bg-gradient-to-r from-orange-50 to-orange-100 ${isMobile ? 'min-h-0' : ''}`}>
-            <CardContent className={isMobile ? "p-3" : "p-4"}>
+            <CardContent className={isMobile ? "p-2" : "p-4"}>
               <div className="text-center">
-                <Wrench className={`text-orange-600 mx-auto mb-1 ${isMobile ? 'h-5 w-5' : 'h-6 w-6'}`} />
-                <p className={`font-bold text-orange-900 ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.pendingRequests}</p>
-                <p className={`text-xs text-orange-700 ${isMobile ? 'leading-tight' : ''}`}>Requests</p>
+                <Wrench className={`text-orange-600 mx-auto mb-1 ${isMobile ? 'h-4 w-4' : 'h-6 w-6'}`} />
+                <p className={`font-bold text-orange-900 ${isMobile ? 'text-sm' : 'text-2xl'}`}>{stats.pendingRequests}</p>
+                <p className={`text-xs text-orange-700 ${isMobile ? 'leading-tight text-[10px]' : ''}`}>Requests</p>
               </div>
             </CardContent>
           </Card>
 
           <Card className={`border-0 shadow-sm bg-gradient-to-r from-cyan-50 to-cyan-100 ${isMobile ? 'min-h-0' : ''}`}>
-            <CardContent className={isMobile ? "p-3" : "p-4"}>
+            <CardContent className={isMobile ? "p-2" : "p-4"}>
               <div className="text-center">
-                <Bell className={`text-cyan-600 mx-auto mb-1 ${isMobile ? 'h-5 w-5' : 'h-6 w-6'}`} />
-                <p className={`font-bold text-cyan-900 ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.unreadAnnouncements}</p>
-                <p className={`text-xs text-cyan-700 ${isMobile ? 'leading-tight' : ''}`}>News</p>
+                <Bell className={`text-cyan-600 mx-auto mb-1 ${isMobile ? 'h-4 w-4' : 'h-6 w-6'}`} />
+                <p className={`font-bold text-cyan-900 ${isMobile ? 'text-sm' : 'text-2xl'}`}>{stats.unreadAnnouncements}</p>
+                <p className={`text-xs text-cyan-700 ${isMobile ? 'leading-tight text-[10px]' : ''}`}>News</p>
               </div>
             </CardContent>
           </Card>
 
           <Card className={`border-0 shadow-sm bg-gradient-to-r from-green-50 to-green-100 ${isMobile ? 'min-h-0' : ''}`}>
-            <CardContent className={isMobile ? "p-3" : "p-4"}>
+            <CardContent className={isMobile ? "p-2" : "p-4"}>
               <div className="text-center">
-                <Calendar className={`text-green-600 mx-auto mb-1 ${isMobile ? 'h-5 w-5' : 'h-6 w-6'}`} />
-                <p className={`font-bold text-green-900 ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+                <Calendar className={`text-green-600 mx-auto mb-1 ${isMobile ? 'h-4 w-4' : 'h-6 w-6'}`} />
+                <p className={`font-bold text-green-900 ${isMobile ? 'text-sm' : 'text-2xl'}`}>
                   {new Date().getDate()}
                 </p>
-                <p className={`text-xs text-green-700 ${isMobile ? 'leading-tight' : ''}`}>Today</p>
+                <p className={`text-xs text-green-700 ${isMobile ? 'leading-tight text-[10px]' : ''}`}>Today</p>
               </div>
             </CardContent>
           </Card>
@@ -193,23 +240,23 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
           </TabsList>
 
           <TabsContent value="rent" className="mt-6">
-            <RentPayments user={user} onStatsUpdate={fetchStats} />
+            <RentPayments user={user} assignment={stats.currentAssignment} />
           </TabsContent>
 
           <TabsContent value="pay" className="mt-6">
-            <PayRent user={user} onStatsUpdate={fetchStats} />
+            <PayRent assignment={stats.currentAssignment} />
           </TabsContent>
 
           <TabsContent value="maintenance" className="mt-6">
-            <MaintenanceRequests user={user} onStatsUpdate={fetchStats} />
+            <MaintenanceRequests user={user} />
           </TabsContent>
 
           <TabsContent value="announcements" className="mt-6">
-            <Announcements user={user} onStatsUpdate={fetchStats} />
+            <Announcements user={user} />
           </TabsContent>
 
           <TabsContent value="profile" className="mt-6">
-            <TenantProfile user={user} onStatsUpdate={fetchStats} />
+            <TenantProfile user={user} />
           </TabsContent>
         </Tabs>
       </div>
