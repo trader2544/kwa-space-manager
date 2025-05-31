@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, Users, Home, Wrench, DollarSign, Bell, LogOut, Menu } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
 import HousesManagement from './HousesManagement';
 import TenantsManagement from './TenantsManagement';
 import MaintenanceManagement from './MaintenanceManagement';
@@ -27,7 +27,6 @@ const AdminDashboard = ({ user, onSignOut }: AdminDashboardProps) => {
     pendingRequests: 0,
     totalRevenue: 0,
   });
-  const isMobile = useIsMobile();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -140,67 +139,67 @@ const AdminDashboard = ({ user, onSignOut }: AdminDashboardProps) => {
       </div>
 
       <div className="px-4 py-6 space-y-6">
-        {/* Mobile-Native Stats Cards - Reduced size */}
-        <div className={`grid grid-cols-2 ${isMobile ? 'gap-2' : 'gap-3'}`}>
-          <Card className={`border-0 shadow-sm bg-gradient-to-r from-blue-50 to-blue-100 ${isMobile ? 'min-h-0' : ''}`}>
-            <CardContent className={isMobile ? "p-3" : "p-4"}>
+        {/* Mobile-Native Stats Cards */}
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="border-0 shadow-sm bg-gradient-to-r from-blue-50 to-blue-100">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className={`text-xs font-medium text-blue-900 ${isMobile ? 'mb-1' : ''}`}>Houses</p>
-                  <p className={`font-bold text-blue-900 ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.totalHouses}</p>
+                  <p className="text-sm font-medium text-blue-900">Houses</p>
+                  <p className="text-2xl font-bold text-blue-900">{stats.totalHouses}</p>
                 </div>
-                <Home className={`text-blue-600 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                <Home className="h-8 w-8 text-blue-600" />
               </div>
-              <div className={`flex gap-1 ${isMobile ? 'mt-2' : 'mt-3'}`}>
-                <Badge variant="default" className={`text-xs px-1 py-0 ${isMobile ? 'text-[10px]' : ''}`}>{stats.occupiedHouses} Occupied</Badge>
-                <Badge variant="secondary" className={`text-xs px-1 py-0 ${isMobile ? 'text-[10px]' : ''}`}>{stats.vacantHouses} Vacant</Badge>
+              <div className="flex gap-1 mt-3">
+                <Badge variant="default" className="text-xs px-2 py-1">{stats.occupiedHouses} Occupied</Badge>
+                <Badge variant="secondary" className="text-xs px-2 py-1">{stats.vacantHouses} Vacant</Badge>
               </div>
             </CardContent>
           </Card>
 
-          <Card className={`border-0 shadow-sm bg-gradient-to-r from-green-50 to-green-100 ${isMobile ? 'min-h-0' : ''}`}>
-            <CardContent className={isMobile ? "p-3" : "p-4"}>
+          <Card className="border-0 shadow-sm bg-gradient-to-r from-green-50 to-green-100">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className={`text-xs font-medium text-green-900 ${isMobile ? 'mb-1' : ''}`}>Tenants</p>
-                  <p className={`font-bold text-green-900 ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.totalTenants}</p>
+                  <p className="text-sm font-medium text-green-900">Tenants</p>
+                  <p className="text-2xl font-bold text-green-900">{stats.totalTenants}</p>
                 </div>
-                <Users className={`text-green-600 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                <Users className="h-8 w-8 text-green-600" />
               </div>
-              <div className={isMobile ? 'mt-2' : 'mt-3'}>
-                <Badge variant="outline" className={`text-xs ${isMobile ? 'text-[10px] px-1 py-0' : ''}`}>Active Users</Badge>
+              <div className="mt-3">
+                <Badge variant="outline" className="text-xs">Active Users</Badge>
               </div>
             </CardContent>
           </Card>
 
-          <Card className={`border-0 shadow-sm bg-gradient-to-r from-orange-50 to-orange-100 ${isMobile ? 'min-h-0' : ''}`}>
-            <CardContent className={isMobile ? "p-3" : "p-4"}>
+          <Card className="border-0 shadow-sm bg-gradient-to-r from-orange-50 to-orange-100">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className={`text-xs font-medium text-orange-900 ${isMobile ? 'mb-1' : ''}`}>Pending</p>
-                  <p className={`font-bold text-orange-900 ${isMobile ? 'text-lg' : 'text-2xl'}`}>{stats.pendingRequests}</p>
+                  <p className="text-sm font-medium text-orange-900">Pending</p>
+                  <p className="text-2xl font-bold text-orange-900">{stats.pendingRequests}</p>
                 </div>
-                <Wrench className={`text-orange-600 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                <Wrench className="h-8 w-8 text-orange-600" />
               </div>
-              <div className={isMobile ? 'mt-2' : 'mt-3'}>
+              <div className="mt-3">
                 {stats.pendingRequests > 0 && (
-                  <Badge variant="destructive" className={`text-xs ${isMobile ? 'text-[10px] px-1 py-0' : ''}`}>Needs Attention</Badge>
+                  <Badge variant="destructive" className="text-xs">Needs Attention</Badge>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          <Card className={`border-0 shadow-sm bg-gradient-to-r from-purple-50 to-purple-100 ${isMobile ? 'min-h-0' : ''}`}>
-            <CardContent className={isMobile ? "p-3" : "p-4"}>
+          <Card className="border-0 shadow-sm bg-gradient-to-r from-purple-50 to-purple-100">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className={`text-xs font-medium text-purple-900 ${isMobile ? 'mb-1' : ''}`}>Revenue</p>
-                  <p className={`font-bold text-purple-900 ${isMobile ? 'text-sm' : 'text-lg'}`}>KSh {stats.totalRevenue.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-purple-900">Revenue</p>
+                  <p className="text-lg font-bold text-purple-900">KSh {stats.totalRevenue.toLocaleString()}</p>
                 </div>
-                <DollarSign className={`text-purple-600 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+                <DollarSign className="h-8 w-8 text-purple-600" />
               </div>
-              <div className={isMobile ? 'mt-2' : 'mt-3'}>
-                <Badge variant="outline" className={`text-xs ${isMobile ? 'text-[10px] px-1 py-0' : ''}`}>This Month</Badge>
+              <div className="mt-3">
+                <Badge variant="outline" className="text-xs">This Month</Badge>
               </div>
             </CardContent>
           </Card>

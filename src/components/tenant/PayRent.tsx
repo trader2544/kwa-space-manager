@@ -50,7 +50,7 @@ const PayRent = ({ assignment }: PayRentProps) => {
         <div className="bg-blue-50 p-4 rounded-lg space-y-3">
           <div>
             <p className="text-sm font-medium text-gray-700">Monthly Rent Amount</p>
-            <p className="text-2xl font-bold text-blue-600">KSh {assignment.houses.price.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-blue-600">KSh {assignment.house.price.toLocaleString()}</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -93,7 +93,7 @@ const PayRent = ({ assignment }: PayRentProps) => {
             <li>3. Select "Pay Bill"</li>
             <li>4. Enter Business Number: <strong>274247</strong></li>
             <li>5. Enter Account Number: <strong>0728159403</strong></li>
-            <li>6. Enter Amount: <strong>KSh {assignment.houses.price.toLocaleString()}</strong></li>
+            <li>6. Enter Amount: <strong>KSh {assignment.house.price.toLocaleString()}</strong></li>
             <li>7. Enter your M-Pesa PIN and confirm</li>
           </ol>
         </div>
