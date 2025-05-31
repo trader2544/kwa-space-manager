@@ -83,7 +83,7 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
         pendingRequests,
         totalRequests: requests?.length || 0,
         unreadAnnouncements: announcements?.length || 0,
-        currentAssignment: assignment || null,
+        currentAssignment: assignment,
       });
     } catch (error) {
       console.error('Error fetching stats:', error);

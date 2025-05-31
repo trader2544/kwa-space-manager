@@ -98,6 +98,25 @@
   }
 }
 
+/* Animated background keyframes */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes grid-move {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50px, 50px);
+  }
+}
+
 /* Touch-friendly interactive elements */
 @media (max-width: 768px) {
   button, [role="button"] {
