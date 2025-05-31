@@ -26,6 +26,7 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
     unreadAnnouncements: 0,
     currentAssignment: null as any,
   });
+  const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
@@ -86,6 +87,8 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,6 +108,48 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
       });
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show white screen with message if no assignment
+  if (!stats.currentAssignment) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <Building2 className="h-16 w-16 text-gray-300 mx-auto mb-6" />
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to Tenant Portal</h1>
+          <p className="text-gray-600 mb-6">
+            You don't have a room assigned yet. Please contact management for room assignment.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button 
+              variant="outline"
+              onClick={() => window.location.href = '/'}
+            >
+              <Home className="h-4 w-4 mr-2" />
+              Contact Admin
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={handleSignOut}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-safe">
@@ -145,54 +190,36 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
 
       <div className="px-4 py-6 space-y-6">
         {/* Current Room Info */}
-        {stats.currentAssignment?.houses ? (
-          <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-blue-100">
-            <CardContent className={isMobile ? "p-3" : "p-4"}>
-              <div className="flex items-center gap-3">
-                <Home className={`text-blue-600 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
-                <div className="flex-1">
-                  <h3 className={`font-bold text-blue-900 ${isMobile ? 'text-sm' : 'text-lg'}`}>
-                    {stats.currentAssignment.houses.room_name}
-                  </h3>
-                  <p className={`text-blue-700 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                    {stats.currentAssignment.houses.floor} Floor, {stats.currentAssignment.houses.section}
-                  </p>
-                  <p className={`text-blue-700 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                    {stats.currentAssignment.houses.room_type} | KSh {stats.currentAssignment.houses.price?.toLocaleString()}/month
-                  </p>
-                  {stats.currentAssignment.houses.amenities && stats.currentAssignment.houses.amenities.length > 0 && (
-                    <div className="mt-2">
-                      <p className={`text-blue-600 font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Amenities:</p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {stats.currentAssignment.houses.amenities.map((amenity: string, index: number) => (
-                          <Badge key={index} variant="secondary" className="text-xs bg-blue-100 text-blue-800">
-                            {amenity}
-                          </Badge>
-                        ))}
-                      </div>
+        <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-blue-100">
+          <CardContent className={isMobile ? "p-3" : "p-4"}>
+            <div className="flex items-center gap-3">
+              <Home className={`text-blue-600 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+              <div className="flex-1">
+                <h3 className={`font-bold text-blue-900 ${isMobile ? 'text-sm' : 'text-lg'}`}>
+                  {stats.currentAssignment.houses.room_name}
+                </h3>
+                <p className={`text-blue-700 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                  {stats.currentAssignment.houses.floor} Floor, {stats.currentAssignment.houses.section}
+                </p>
+                <p className={`text-blue-700 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                  {stats.currentAssignment.houses.room_type} | KSh {stats.currentAssignment.houses.price?.toLocaleString()}/month
+                </p>
+                {stats.currentAssignment.houses.amenities && stats.currentAssignment.houses.amenities.length > 0 && (
+                  <div className="mt-2">
+                    <p className={`text-blue-600 font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Amenities:</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {stats.currentAssignment.houses.amenities.map((amenity: string, index: number) => (
+                        <Badge key={index} variant="secondary" className="text-xs bg-blue-100 text-blue-800">
+                          {amenity}
+                        </Badge>
+                      ))}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="border-0 shadow-lg bg-gradient-to-r from-orange-50 to-orange-100">
-            <CardContent className={isMobile ? "p-3" : "p-4"}>
-              <div className="flex items-center gap-3">
-                <Home className={`text-orange-600 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
-                <div className="flex-1">
-                  <h3 className={`font-bold text-orange-900 ${isMobile ? 'text-sm' : 'text-lg'}`}>
-                    No Room Assigned
-                  </h3>
-                  <p className={`text-orange-700 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                    Please contact management for room assignment
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Mobile-Native Stats Cards - Reduced size */}
         <div className={`grid grid-cols-3 ${isMobile ? 'gap-2' : 'gap-3'}`}>
@@ -248,15 +275,23 @@ const TenantDashboard = ({ user, onSignOut }: TenantDashboardProps) => {
           </TabsContent>
 
           <TabsContent value="maintenance" className="mt-6">
-            <MaintenanceRequests user={user} />
+            <MaintenanceRequests 
+              user={user} 
+              assignment={stats.currentAssignment}
+              onUpdate={fetchStats}
+            />
           </TabsContent>
 
           <TabsContent value="announcements" className="mt-6">
-            <Announcements user={user} />
+            <Announcements />
           </TabsContent>
 
           <TabsContent value="profile" className="mt-6">
-            <TenantProfile user={user} />
+            <TenantProfile 
+              user={user} 
+              assignment={stats.currentAssignment}
+              onUpdate={fetchStats}
+            />
           </TabsContent>
         </Tabs>
       </div>
