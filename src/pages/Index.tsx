@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -160,15 +159,97 @@ const Index = () => {
   // Show main landing page
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Animated Background */}
+      {/* Enhanced Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="floating-shapes">
+          {/* Original shapes */}
           <div className="shape shape-1"></div>
           <div className="shape shape-2"></div>
           <div className="shape shape-3"></div>
           <div className="shape shape-4"></div>
           <div className="shape shape-5"></div>
+          
+          {/* Additional floating shapes */}
+          <div className="shape" style={{
+            width: '50px',
+            height: '50px',
+            top: '15%',
+            right: '30%',
+            animation: 'float 7s ease-in-out infinite',
+            animationDelay: '1.5s',
+            background: 'linear-gradient(45deg, rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1))'
+          }}></div>
+          
+          <div className="shape" style={{
+            width: '75px',
+            height: '75px',
+            bottom: '15%',
+            right: '10%',
+            animation: 'float-reverse 9s ease-in-out infinite',
+            animationDelay: '3s',
+            background: 'linear-gradient(45deg, rgba(34, 197, 94, 0.12), rgba(59, 130, 246, 0.08))'
+          }}></div>
+          
+          <div className="shape" style={{
+            width: '60px',
+            height: '60px',
+            top: '45%',
+            left: '5%',
+            animation: 'float 8s ease-in-out infinite',
+            animationDelay: '2.5s',
+            background: 'linear-gradient(45deg, rgba(251, 146, 60, 0.1), rgba(34, 197, 94, 0.1))'
+          }}></div>
+          
+          <div className="shape" style={{
+            width: '85px',
+            height: '85px',
+            top: '65%',
+            left: '60%',
+            animation: 'float-reverse 6s ease-in-out infinite',
+            animationDelay: '4s',
+            background: 'linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.08))'
+          }}></div>
+          
+          <div className="shape" style={{
+            width: '40px',
+            height: '40px',
+            top: '25%',
+            left: '75%',
+            animation: 'pulse-glow 5s ease-in-out infinite',
+            animationDelay: '1s',
+            background: 'linear-gradient(45deg, rgba(236, 72, 153, 0.12), rgba(168, 85, 247, 0.08))'
+          }}></div>
+          
+          <div className="shape" style={{
+            width: '65px',
+            height: '65px',
+            bottom: '35%',
+            left: '15%',
+            animation: 'float 10s ease-in-out infinite',
+            animationDelay: '0.5s',
+            background: 'linear-gradient(45deg, rgba(16, 185, 129, 0.1), rgba(245, 101, 101, 0.08))'
+          }}></div>
+          
+          <div className="shape" style={{
+            width: '55px',
+            height: '55px',
+            top: '8%',
+            left: '35%',
+            animation: 'float-reverse 7.5s ease-in-out infinite',
+            animationDelay: '2s',
+            background: 'linear-gradient(45deg, rgba(139, 92, 246, 0.09), rgba(34, 197, 94, 0.11))'
+          }}></div>
+          
+          <div className="shape" style={{
+            width: '45px',
+            height: '45px',
+            bottom: '25%',
+            right: '40%',
+            animation: 'pulse-glow 6s ease-in-out infinite',
+            animationDelay: '3.5s',
+            background: 'linear-gradient(45deg, rgba(251, 146, 60, 0.08), rgba(59, 130, 246, 0.1))'
+          }}></div>
         </div>
       </div>
 
