@@ -159,8 +159,20 @@ const Index = () => {
 
   // Show main landing page
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
-      <div className="container mx-auto px-4 py-4 md:py-8">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+        <div className="floating-shapes">
+          <div className="shape shape-1"></div>
+          <div className="shape shape-2"></div>
+          <div className="shape shape-3"></div>
+          <div className="shape shape-4"></div>
+          <div className="shape shape-5"></div>
+        </div>
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4 py-4 md:py-8">
         {/* Header */}
         <div className="text-center mb-6 md:mb-12">
           <div className="flex items-center justify-center mb-4 md:mb-6">
@@ -196,7 +208,7 @@ const Index = () => {
 
         {/* Hero CTA */}
         <div className="max-w-4xl mx-auto mb-6 md:mb-16">
-          <Card className="border-2 border-green-200 bg-gradient-to-r from-green-50 to-blue-50">
+          <Card className="glass-card border-2 border-green-200/30">
             <CardContent className="p-4 md:p-8 text-center">
               <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-4">
                 Find Your Perfect Room Today
@@ -217,7 +229,7 @@ const Index = () => {
                   onClick={() => setShowAuth(true)}
                   variant="outline" 
                   size="lg"
-                  className="text-base md:text-lg px-6 md:px-8"
+                  className="text-base md:text-lg px-6 md:px-8 glass-button"
                 >
                   <Users className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                   Student Portal
@@ -250,7 +262,7 @@ const Index = () => {
                   { icon: Droplets, title: "24/7 Water Supply", desc: "Consistent clean water supply ensuring comfort and convenience", color: "cyan" },
                 ].map((feature, index) => (
                   <div key={index} className="text-center flex-shrink-0 w-64">
-                    <div className={`mx-auto mb-4 p-4 bg-${feature.color}-100 rounded-full w-16 h-16 flex items-center justify-center`}>
+                    <div className={`mx-auto mb-4 p-4 glass-card rounded-full w-16 h-16 flex items-center justify-center`}>
                       <feature.icon className={`h-8 w-8 text-${feature.color}-600`} />
                     </div>
                     <h4 className="text-lg font-semibold mb-2 text-gray-800">{feature.title}</h4>
@@ -263,48 +275,48 @@ const Index = () => {
           
           {/* Desktop Grid */}
           <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            <div className="text-center">
-              <div className="mx-auto mb-4 p-4 bg-green-100 rounded-full w-16 h-16 flex items-center justify-center">
+            <div className="text-center glass-card p-6 rounded-lg">
+              <div className="mx-auto mb-4 p-4 bg-green-100/50 rounded-full w-16 h-16 flex items-center justify-center">
                 <Shield className="h-8 w-8 text-green-600" />
               </div>
               <h4 className="text-xl font-semibold mb-2 text-gray-800">24/7 Security</h4>
               <p className="text-gray-600">Round-the-clock security for complete peace of mind and safety</p>
             </div>
             
-            <div className="text-center">
-              <div className="mx-auto mb-4 p-4 bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center">
+            <div className="text-center glass-card p-6 rounded-lg">
+              <div className="mx-auto mb-4 p-4 bg-blue-100/50 rounded-full w-16 h-16 flex items-center justify-center">
                 <Wifi className="h-8 w-8 text-blue-600" />
               </div>
               <h4 className="text-xl font-semibold mb-2 text-gray-800">Free WiFi</h4>
               <p className="text-gray-600">High-speed internet connectivity for all your study and research needs</p>
             </div>
             
-            <div className="text-center">
-              <div className="mx-auto mb-4 p-4 bg-cyan-100 rounded-full w-16 h-16 flex items-center justify-center">
+            <div className="text-center glass-card p-6 rounded-lg">
+              <div className="mx-auto mb-4 p-4 bg-cyan-100/50 rounded-full w-16 h-16 flex items-center justify-center">
                 <Droplets className="h-8 w-8 text-cyan-600" />
               </div>
               <h4 className="text-xl font-semibold mb-2 text-gray-800">24/7 Water Supply</h4>
               <p className="text-gray-600">Consistent clean water supply ensuring comfort and convenience</p>
             </div>
             
-            <div className="text-center">
-              <div className="mx-auto mb-4 p-4 bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center">
+            <div className="text-center glass-card p-6 rounded-lg">
+              <div className="mx-auto mb-4 p-4 bg-purple-100/50 rounded-full w-16 h-16 flex items-center justify-center">
                 <BookOpen className="h-8 w-8 text-purple-600" />
               </div>
               <h4 className="text-xl font-semibold mb-2 text-gray-800">Study-Friendly Environment</h4>
               <p className="text-gray-600">Quiet, conducive atmosphere designed for academic excellence</p>
             </div>
             
-            <div className="text-center">
-              <div className="mx-auto mb-4 p-4 bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center">
+            <div className="text-center glass-card p-6 rounded-lg">
+              <div className="mx-auto mb-4 p-4 bg-orange-100/50 rounded-full w-16 h-16 flex items-center justify-center">
                 <Home className="h-8 w-8 text-orange-600" />
               </div>
               <h4 className="text-xl font-semibold mb-2 text-gray-800">Furnished Rooms</h4>
               <p className="text-gray-600">Fully furnished accommodations with essential amenities included</p>
             </div>
             
-            <div className="text-center">
-              <div className="mx-auto mb-4 p-4 bg-teal-100 rounded-full w-16 h-16 flex items-center justify-center">
+            <div className="text-center glass-card p-6 rounded-lg">
+              <div className="mx-auto mb-4 p-4 bg-teal-100/50 rounded-full w-16 h-16 flex items-center justify-center">
                 <Users className="h-8 w-8 text-teal-600" />
               </div>
               <h4 className="text-xl font-semibold mb-2 text-gray-800">Exclusive Community</h4>
@@ -317,7 +329,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto mb-6 md:mb-16">
           <div className="md:hidden">
             <Collapsible open={researchOpen} onOpenChange={setResearchOpen}>
-              <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+              <Card className="glass-card border-2 border-blue-200/30">
                 <CollapsibleTrigger asChild>
                   <CardHeader className="text-center cursor-pointer">
                     <CardTitle className="text-lg text-gray-800 mb-2 flex items-center justify-center gap-2">
@@ -335,15 +347,15 @@ const Index = () => {
                         Our academic experts provide high-quality assistance at student-friendly prices.
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="bg-white p-4 rounded-lg shadow-sm">
+                        <div className="glass-card p-4 rounded-lg">
                           <h4 className="font-semibold text-blue-900 mb-2">Research Papers</h4>
                           <p className="text-sm text-gray-600">Complete research writing and editing</p>
                         </div>
-                        <div className="bg-white p-4 rounded-lg shadow-sm">
+                        <div className="glass-card p-4 rounded-lg">
                           <h4 className="font-semibold text-blue-900 mb-2">Case Studies</h4>
                           <p className="text-sm text-gray-600">Medical case study analysis and formatting</p>
                         </div>
-                        <div className="bg-white p-4 rounded-lg shadow-sm">
+                        <div className="glass-card p-4 rounded-lg">
                           <h4 className="font-semibold text-blue-900 mb-2">Thesis Support</h4>
                           <p className="text-sm text-gray-600">Thesis writing and formatting assistance</p>
                         </div>
@@ -365,7 +377,7 @@ const Index = () => {
           
           {/* Desktop Version */}
           <div className="hidden md:block">
-            <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+            <Card className="glass-card border-2 border-blue-200/30">
               <CardHeader className="text-center">
                 <CardTitle className="text-xl md:text-2xl text-gray-800 mb-4 flex items-center justify-center gap-2">
                   <BookOpen className="h-6 w-6 text-blue-600" />
@@ -382,15 +394,15 @@ const Index = () => {
                     Our academic experts provide high-quality assistance at student-friendly prices.
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <div className="glass-card p-4 rounded-lg">
                       <h4 className="font-semibold text-blue-900 mb-2">Research Papers</h4>
                       <p className="text-sm text-gray-600">Complete research writing and editing</p>
                     </div>
-                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <div className="glass-card p-4 rounded-lg">
                       <h4 className="font-semibold text-blue-900 mb-2">Case Studies</h4>
                       <p className="text-sm text-gray-600">Medical case study analysis and formatting</p>
                     </div>
-                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <div className="glass-card p-4 rounded-lg">
                       <h4 className="font-semibold text-blue-900 mb-2">Thesis Support</h4>
                       <p className="text-sm text-gray-600">Thesis writing and formatting assistance</p>
                     </div>
@@ -413,7 +425,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto mb-6 md:mb-16">
           <div className="md:hidden">
             <Collapsible open={partnersOpen} onOpenChange={setPartnersOpen}>
-              <Card>
+              <Card className="glass-card">
                 <CollapsibleTrigger asChild>
                   <CardHeader className="text-center cursor-pointer">
                     <CardTitle className="text-lg text-gray-800 mb-2 flex items-center justify-center gap-2">
@@ -438,7 +450,7 @@ const Index = () => {
                           { name: "KMTC Kitui", fullName: "Kenya Medical Training College", color: "green" },
                           { name: "KMTC Mbooni", fullName: "Kenya Medical Training College", color: "purple" },
                         ].map((institution, index) => (
-                          <div key={index} className={`bg-${institution.color}-50 p-4 rounded-lg text-center flex-shrink-0 w-48`}>
+                          <div key={index} className={`glass-card p-4 rounded-lg text-center flex-shrink-0 w-48`}>
                             <GraduationCap className={`h-8 w-8 text-${institution.color}-600 mx-auto mb-2`} />
                             <h4 className={`font-semibold text-${institution.color}-900 text-sm`}>{institution.name}</h4>
                             <p className={`text-xs text-${institution.color}-700`}>{institution.campus || institution.fullName}</p>
@@ -454,7 +466,7 @@ const Index = () => {
           
           {/* Desktop Version */}
           <div className="hidden md:block">
-            <Card>
+            <Card className="glass-card">
               <CardHeader className="text-center">
                 <CardTitle className="text-xl md:text-2xl text-gray-800 mb-4">
                   Partner Medical Institutions
@@ -465,32 +477,32 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                  <div className="glass-card p-4 rounded-lg text-center">
                     <GraduationCap className="h-8 w-8 text-blue-600 mx-auto mb-2" />
                     <h4 className="font-semibold text-blue-900">Jordan Medical College</h4>
                     <p className="text-sm text-blue-700">Kitui Campus</p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg text-center">
+                  <div className="glass-card p-4 rounded-lg text-center">
                     <GraduationCap className="h-8 w-8 text-green-600 mx-auto mb-2" />
                     <h4 className="font-semibold text-green-900">KMTC Kitui</h4>
                     <p className="text-sm text-green-700">Kenya Medical Training College</p>
                   </div>
-                  <div className="bg-purple-50 p-4 rounded-lg text-center">
+                  <div className="glass-card p-4 rounded-lg text-center">
                     <GraduationCap className="h-8 w-8 text-purple-600 mx-auto mb-2" />
                     <h4 className="font-semibold text-purple-900">Thika</h4>
                     <p className="text-sm text-purple-700">Medical School</p>
                   </div>
-                  <div className="bg-orange-50 p-4 rounded-lg text-center">
+                  <div className="glass-card p-4 rounded-lg text-center">
                     <GraduationCap className="h-8 w-8 text-orange-600 mx-auto mb-2" />
                     <h4 className="font-semibold text-orange-900">KMTC Thika</h4>
                     <p className="text-sm text-orange-700">Kenya Medical Training College</p>
                   </div>
-                  <div className="bg-red-50 p-4 rounded-lg text-center">
+                  <div className="glass-card p-4 rounded-lg text-center">
                     <GraduationCap className="h-8 w-8 text-red-600 mx-auto mb-2" />
                     <h4 className="font-semibold text-red-900">KMTC Wajir</h4>
                     <p className="text-sm text-red-700">Kenya Medical Training College</p>
                   </div>
-                  <div className="bg-teal-50 p-4 rounded-lg text-center">
+                  <div className="glass-card p-4 rounded-lg text-center">
                     <GraduationCap className="h-8 w-8 text-teal-600 mx-auto mb-2" />
                     <h4 className="font-semibold text-teal-900">Univerities offering medical courses</h4>
                     <p className="text-sm text-teal-700">Other Medical Institutions</p>
@@ -503,7 +515,7 @@ const Index = () => {
 
         {/* Contact Information */}
         <div className="max-w-4xl mx-auto">
-          <Card className="border-2 border-blue-200">
+          <Card className="glass-card border-2 border-blue-200/30">
             <CardHeader className="text-center">
               <CardTitle className="text-xl md:text-2xl text-gray-800">Ready to Move In?</CardTitle>
               <CardDescription>
@@ -543,7 +555,7 @@ const Index = () => {
                     <Button 
                       onClick={() => setShowAuth(true)}
                       variant="outline"
-                      className="w-full"
+                      className="w-full glass-button"
                     >
                       <Users className="h-4 w-4 mr-2" />
                       Access Portal
