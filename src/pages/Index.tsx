@@ -59,7 +59,22 @@ const Index = () => {
 
     checkSession();
 
-    return () => subscription.unsubscribe();
+    // Load the 3CX chat script
+    const script = document.createElement('script');
+    script.defer = true;
+    script.src = 'https://downloads-global.3cx.com/downloads/livechatandtalk/v1/callus.js';
+    script.id = 'tcx-callus-js';
+    script.charset = 'utf-8';
+    document.head.appendChild(script);
+
+    return () => {
+      subscription.unsubscribe();
+      // Clean up the script when component unmounts
+      const existingScript = document.getElementById('tcx-callus-js');
+      if (existingScript) {
+        document.head.removeChild(existingScript);
+      }
+    };
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
@@ -161,6 +176,9 @@ const Index = () => {
   return (
     <div className="min-h-screen relative overflow-hidden">
       <ThemeToggle />
+      
+      {/* 3CX Live Chat Widget */}
+      <call-us-selector phonesystem-url="https://1575.3cx.cloud" party="kwakamande"></call-us-selector>
       
       {/* Enhanced Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
