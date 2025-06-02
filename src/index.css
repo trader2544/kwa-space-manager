@@ -1,4 +1,3 @@
-
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
@@ -96,10 +95,21 @@
     transition: all 0.3s ease;
   }
 
+  .dark .glass-card {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 32px rgba(255, 255, 255, 0.05);
+  }
+
   .glass-card:hover {
     background: rgba(255, 255, 255, 0.35);
     transform: translateY(-2px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .dark .glass-card:hover {
+    background: rgba(0, 0, 0, 0.35);
+    box-shadow: 0 12px 40px rgba(255, 255, 255, 0.1);
   }
 
   .glass-button {
@@ -108,8 +118,17 @@
     border: 1px solid rgba(255, 255, 255, 0.3);
   }
 
+  .dark .glass-button {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
   .glass-button:hover {
     background: rgba(255, 255, 255, 0.3);
+  }
+
+  .dark .glass-button:hover {
+    background: rgba(0, 0, 0, 0.3);
   }
 
   /* Grid Pattern */
