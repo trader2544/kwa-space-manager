@@ -1,73 +1,117 @@
-# Welcome to your Lovable project
+# KWA Space Manager
 
-## Project info
+KWA Space Manager is a comprehensive solution for organizing, tracking, and managing workspace environments. The project streamlines space allocation, resource planning, and workspace monitoring to help individuals and teams maximize productivity and efficiency.
 
-**URL**: https://lovable.dev/projects/681f932f-2e35-49e2-861a-e1f796ae33a8
+---
 
-## How can I edit this code?
+## Table of Contents
 
-There are several ways of editing your application.
+- [Features](#features)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/681f932f-2e35-49e2-861a-e1f796ae33a8) and start prompting.
+## Features
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Workspace Organization**: Create, update, and delete workspace entities with ease.
+- **Resource Allocation**: Assign and manage resources within various spaces.
+- **User Management**: Add or remove workspace members and configure permissions.
+- **Activity Tracking**: Monitor workspace activity and access logs.
+- **Customizable Settings**: Adapt workspace parameters to fit your needs.
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Getting Started
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Prerequisites
 
-Follow these steps:
+- [Node.js](https://nodejs.org/) (v14 or above recommended)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Installation
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/trader2544/kwa-space-manager.git
+   cd kwa-space-manager
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+2. **Install dependencies:**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### Configuration
+
+- Copy the example environment file (if present) and modify as needed:
+  ```bash
+  cp .env.example .env
+  ```
+- Edit `.env` to customize environment variables for your setup.
+
+---
+
+## Usage
+
+**Development server:**
+```bash
+npm start
+# or
+yarn start
 ```
 
-**Edit a file directly in GitHub**
+**Production build:**
+```bash
+npm run build
+# or
+yarn build
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+**Testing:**
+```bash
+npm test
+# or
+yarn test
+```
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Contributing
 
-## What technologies are used for this project?
+Contributions are welcome! Please follow these steps:
 
-This project is built with:
+1. Fork the repository.
+2. Create a new branch:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. Make your changes and commit:
+   ```bash
+   git commit -am "Describe your feature"
+   ```
+4. Push your branch:
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+5. Open a pull request with a clear description of your changes.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## License
 
-Simply open [Lovable](https://lovable.dev/projects/681f932f-2e35-49e2-861a-e1f796ae33a8) and click on Share -> Publish.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+## Contact
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+For questions, support, or feedback, please [open an issue](https://github.com/trader2544/kwa-space-manager/issues) in this repository.
