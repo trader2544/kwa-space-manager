@@ -1,30 +1,42 @@
 # KWA Space Manager
 
-KWA Space Manager is a comprehensive solution for organizing, tracking, and managing workspace environments. The project streamlines space allocation, resource planning, and workspace monitoring to help individuals and teams maximize productivity and efficiency.
+KWA Space Manager is a property rental management system designed for landlords, property managers, and tenants. It provides a modern web interface to manage rental units, tenants, rent payments, and maintenance requests.
 
 ---
 
-## Table of Contents
+## Key Features
 
-- [Features](#features)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Configuration](#configuration)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
+- **Rental Unit Management**
+  - Organize rental units (houses/rooms), set amenities, pricing, and availability.
+  - Track vacant and occupied units.
+
+- **Tenant Management**
+  - Add and update tenant profiles.
+  - Assign tenants to rental units.
+  - View tenant assignments and rental history.
+
+- **Rent Payment Tracking**
+  - Record rent payments, including amount, payment method, reference, and payment status.
+  - View monthly rent statistics: expected, paid, remaining, and tenant breakdown.
+  - Support for multiple payment methods (e.g., Mpesa).
+
+- **Maintenance Management**
+  - Tenants can submit maintenance requests specifying type, priority, and description.
+  - Administrators can view, update, and resolve maintenance requests.
+
+- **Role-based Dashboards**
+  - Separate dashboards for administrators and tenants.
+  - Administrators: manage units, tenants, payments, and maintenance.
+  - Tenants: view assignments, submit requests, and track rent status.
 
 ---
 
-## Features
+## Technology Stack
 
-- **Workspace Organization**: Create, update, and delete workspace entities with ease.
-- **Resource Allocation**: Assign and manage resources within various spaces.
-- **User Management**: Add or remove workspace members and configure permissions.
-- **Activity Tracking**: Monitor workspace activity and access logs.
-- **Customizable Settings**: Adapt workspace parameters to fit your needs.
+- **Frontend**: React (TypeScript)
+- **Backend/Database**: Supabase (PostgreSQL, API)
+- **UI Components**: Custom UI with state management hooks
+- **Icons**: Lucide React
 
 ---
 
@@ -32,44 +44,35 @@ KWA Space Manager is a comprehensive solution for organizing, tracking, and mana
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v14 or above recommended)
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+- Node.js v14 or above
+- npm or yarn
 
 ### Installation
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/trader2544/kwa-space-manager.git
-   cd kwa-space-manager
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+```bash
+git clone https://github.com/trader2544/kwa-space-manager.git
+cd kwa-space-manager
+npm install
+# or
+yarn install
+```
 
 ### Configuration
 
-- Copy the example environment file (if present) and modify as needed:
-  ```bash
-  cp .env.example .env
-  ```
-- Edit `.env` to customize environment variables for your setup.
+- Copy `.env.example` to `.env` and configure your Supabase credentials and other environment variables.
 
 ---
 
 ## Usage
 
-**Development server:**
+**Development:**
 ```bash
 npm start
 # or
 yarn start
 ```
 
-**Production build:**
+**Production:**
 ```bash
 npm run build
 # or
@@ -85,33 +88,23 @@ yarn test
 
 ---
 
-## Contributing
+## Main Modules
 
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository.
-2. Create a new branch:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-3. Make your changes and commit:
-   ```bash
-   git commit -am "Describe your feature"
-   ```
-4. Push your branch:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-5. Open a pull request with a clear description of your changes.
+- `src/components/admin/TenantsManagement.tsx` - Manage tenants and assignments.
+- `src/components/admin/RentManagement.tsx` - Manage and track rent payments.
+- `src/components/admin/MaintenanceManagement.tsx` - Oversee maintenance requests.
+- `src/components/tenant/TenantDashboard.tsx` - Tenant home dashboard.
+- `src/components/tenant/RentPayments.tsx` - Tenant payment history and status.
+- `src/components/tenant/MaintenanceRequests.tsx` - Submit and view tenant maintenance requests.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+MIT
 
 ---
 
 ## Contact
 
-For questions, support, or feedback, please [open an issue](https://github.com/trader2544/kwa-space-manager/issues) in this repository.
+For questions, support, or feedback, please [open an issue](https://github.com/trader2544/kwa-space-manager/issues).
