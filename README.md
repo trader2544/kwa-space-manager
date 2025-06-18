@@ -1,6 +1,5 @@
-# KWA Space Manager
-
-KWA Space Manager is a property rental management system designed for landlords, property managers, and tenants. It provides a modern web interface to manage rental units, tenants, rent payments, and maintenance requests.
+# KWA KAMANDE rental management system
+KWA KAMANDE rental management system designed for landlords, property managers, and tenants. It provides a modern web interface to manage rental units, tenants, rent payments, and maintenance requests.
 
 ---
 
